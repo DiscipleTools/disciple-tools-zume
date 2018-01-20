@@ -1,2 +1,4 @@
-# disciple-tools-zume
-This is an integration between the Zume project and Disciple Tools for coaching.
+[![Build Status](https://travis-ci.org/ZumeProject/disciple-tools-zume.svg?branch=master)](https://travis-ci.org/ZumeProject/disciple-tools-zume)
+
+# disciple-tools-webform
+This plugin is an expansion of the Disciple Tools system.
