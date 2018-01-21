@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Disciple Tools - Zume: Integration
+ * Plugin Name: Disciple Tools - Zume - Integration
  * Plugin URI: https://github.com/ZumeProject/disciple-tools-zume
  * Description: Disciple Tools - Zume - Integration extends the Disciple Tools system to send and receive remote submissions from webform contacts.
  * Version:  0.1.0
