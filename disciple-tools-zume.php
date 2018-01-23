@@ -140,9 +140,6 @@ class DT_Zume {
         // Internationalize the text strings used.
         add_action( 'plugins_loaded', array( $this, 'i18n' ), 2 );
 
-        // Register activation hook.
-        register_activation_hook( __FILE__, [ $this, 'activation' ] );
-        register_deactivation_hook( __FILE__, [ $this, 'deactivation' ] );
     }
 
     /**
@@ -152,7 +149,7 @@ class DT_Zume {
      * @access public
      * @return void
      */
-    public function activation() {
+    public static function activation() {
     }
 
     /**
@@ -162,7 +159,7 @@ class DT_Zume {
      * @access public
      * @return void
      */
-    public function deactivation() {
+    public static function deactivation() {
     }
 
     /**
@@ -224,6 +221,10 @@ class DT_Zume {
     }
 }
 // end main plugin class
+
+// Register activation hook.
+register_activation_hook( __FILE__, [ 'DT_Zume', 'activation' ] );
+register_deactivation_hook( __FILE__, [ 'DT_Zume', 'deactivation' ] );
 
 /**
  * Admin alert for when Disciple Tools Theme is not available
