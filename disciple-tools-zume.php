@@ -141,7 +141,8 @@ class DT_Zume {
         add_action( 'plugins_loaded', array( $this, 'i18n' ), 2 );
 
         // Register activation hook.
-        register_activation_hook( __FILE__, array( $this, 'activation' ) );
+        register_activation_hook( __FILE__, [ $this, 'activation' ] );
+        register_deactivation_hook( __FILE__, [ $this, 'deactivation' ] );
     }
 
     /**
@@ -152,7 +153,16 @@ class DT_Zume {
      * @return void
      */
     public function activation() {
+    }
 
+    /**
+     * Method that runs only when the plugin is deactivated.
+     *
+     * @since  0.1
+     * @access public
+     * @return void
+     */
+    public function deactivation() {
     }
 
     /**
