@@ -53,7 +53,7 @@ class DT_Zume_Menu {
      * @since 0.1
      */
     public function register_menu() {
-        add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_options', 'dt_zume', [ $this, 'content' ], 'dashicons-admin-generic', 59 );
+        add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'content' ], 'dashicons-admin-generic', 59 );
     }
 
     /**

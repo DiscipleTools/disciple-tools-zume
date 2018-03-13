@@ -150,7 +150,9 @@ class DT_Zume {
      * @return void
      */
     public static function activation() {
-
+        // Add integration capacity to administrator based on manage_dt
+        $role = get_role( 'administrator' );
+        $role->add_cap( 'manage_dt' );
     }
 
     /**
