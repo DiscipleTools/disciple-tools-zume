@@ -150,6 +150,7 @@ class DT_Zume {
      * @return void
      */
     public static function activation() {
+
     }
 
     /**

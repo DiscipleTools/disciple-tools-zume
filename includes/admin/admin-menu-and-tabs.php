@@ -53,14 +53,8 @@ class DT_Zume_Menu {
      * @since 0.1
      */
     public function register_menu() {
-        add_menu_page( __( 'Extensions (DT)', 'disciple_tools' ), __( 'Extensions (DT)', 'disciple_tools' ), 'manage_dt', 'dt_extensions', [ $this, 'extensions_menu' ], 'dashicons-admin-generic', 59 );
-        add_submenu_page( 'dt_extensions', __( 'Zume', 'dt_zume' ), __( 'Zume', 'dt_zume' ), 'manage_dt', $this->token, [ $this, 'content' ] );
+        add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_options', 'dt_zume', [ $this, 'content' ], 'dashicons-admin-generic', 59 );
     }
-
-    /**
-     * Menu stub. Replaced when Disciple Tools Theme fully loads.
-     */
-    public function extensions_menu() {}
 
     /**
      * Builds page contents
