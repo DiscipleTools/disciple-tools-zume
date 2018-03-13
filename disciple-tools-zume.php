@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function dt_zume() {
     $current_theme = get_option( 'current_theme' );
-    if ( 'Disciple Tools' == $current_theme ) {
+    if ( 'Disciple Tools' == $current_theme || 'Zúme Project' == $current_theme ) {
         return DT_Zume::get_instance();
     }
     else {
@@ -233,7 +233,7 @@ function dt_zume_no_disciple_tools_theme_found()
 {
     ?>
     <div class="notice notice-error">
-        <p><?php esc_html_e( "'Disciple Tools - Zume' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or deactivate 'Disciple Tools - Zume' plugin.", "dt_zume" ); ?></p>
+        <p><?php esc_html_e( "'Disciple Tools - Zume' plugin requires 'Disciple Tools' or 'Zúme Project' themes to work. Please activate 'Disciple Tools' or 'Zúme Project' themes or deactivate 'Disciple Tools - Zume' plugin.", "dt_zume" ); ?></p>
     </div>
     <?php
 }
