@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"Project-Id-Version: Disciple Tools - Zume: Integration\n"
-"POT-Creation-Date: 2018-01-20 12:04-0700\n"
-"PO-Revision-Date: 2018-01-20 12:04-0700\n"
+"Project-Id-Version: Disciple Tools - Zume\n"
+"POT-Creation-Date: 2018-03-13 13:42-0600\n"
+"PO-Revision-Date: 2018-03-13 13:42-0600\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -21,16 +21,48 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: disciple-tools-zume.php:167 disciple-tools-zume.php:178
+#: disciple-tools-zume.php:196 disciple-tools-zume.php:207
 msgid "Whoah, partner!"
 msgstr ""
 
-#: disciple-tools-zume.php:190
+#: disciple-tools-zume.php:219
 msgid "Method does not exist."
 msgstr ""
 
+#: disciple-tools-zume.php:237
+msgid ""
+"'Disciple Tools - Zume' plugin requires 'Disciple Tools' or 'Zúme Project' "
+"themes to work. Please activate 'Disciple Tools' or 'Zúme Project' themes or "
+"deactivate 'Disciple Tools - Zume' plugin."
+msgstr ""
+
+#: includes/admin/admin-menu-and-tabs.php:56
+msgid "Zúme Integration"
+msgstr ""
+
+#: includes/admin/admin-menu-and-tabs.php:66
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: includes/admin/admin-menu-and-tabs.php:79
+msgid "DISCIPLE TOOLS / ZUME - INTEGRATION"
+msgstr ""
+
+#: includes/admin/admin-menu-and-tabs.php:81
+#: includes/admin/admin-menu-and-tabs.php:82
+msgid "nav-tab-active"
+msgstr ""
+
+#: includes/admin/admin-menu-and-tabs.php:81
+msgid "General"
+msgstr ""
+
+#: includes/admin/admin-menu-and-tabs.php:82
+msgid "Second"
+msgstr ""
+
 #. Plugin Name of the plugin/theme
-msgid "Disciple Tools - Zume: Integration"
+msgid "Disciple Tools - Zume"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
@@ -39,8 +71,8 @@ msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
-"Disciple Tools - Zume - Integration extends the Disciple Tools system to "
-"send and receive remote submissions from webform contacts."
+"Disciple Tools - Zume plugin integrates the Disciple Tools system into the "
+"Zume Project."
 msgstr ""
 
 #. Author URI of the plugin/theme

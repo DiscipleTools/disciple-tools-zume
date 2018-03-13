@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="PHP_CodeSniffer">
-  <description>The coding standard for disciple-tools theme</description>
+  <description>The coding standard for dt zume</description>
 
   <!-- This should be the same as for disciple-tools plugin -->
 
@@ -23,11 +23,7 @@
 
   <file>.</file>
 
-  <exclude-pattern>dt-assets/dependencies/*</exclude-pattern>
   <exclude-pattern>vendor/*</exclude-pattern>
-  <exclude-pattern>dt-update/class-tgm-plugin-activation.php</exclude-pattern>
-  <exclude-pattern>dt-update/plugin-update-checker/*</exclude-pattern>
-  <exclude-pattern>dt-core/libraries/*</exclude-pattern>
 
   <arg name="extensions" value="php,inc,lib"/>
   <arg value="n"/>
