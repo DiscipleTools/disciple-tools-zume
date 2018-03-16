@@ -137,23 +137,7 @@ class DT_Zume_Tab_General
     }
 
     public function main_column() {
-        ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <th>Header</th>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
-        <?php
+        DT_Site_Link_System::metabox_multiple_link();
     }
 
     public function right_column() {

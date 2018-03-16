@@ -101,13 +101,14 @@ class DT_Zume {
      * @return void
      */
     private function includes() {
-        require_once( 'includes/admin/admin-menu-and-tabs.php' );
 
         // Call site link system if Disciple Tools is not the theme, else use this.
         $current_theme = get_option( 'current_theme' );
-        if ( ! 'Disciple Tools' == $current_theme ) {
+        if ( 'Zúme Project' === $current_theme ) {
             require_once( 'includes/site-link-system.php' ); // site linking system
         }
+
+        require_once( 'includes/admin/admin-menu-and-tabs.php' );
     }
 
     /**
