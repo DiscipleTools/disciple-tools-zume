@@ -142,21 +142,6 @@ class DT_Zume_Tab_General
 
     public function right_column() {
         ?>
-        <!-- Box -->
-        <table class="widefat striped">
-            <thead>
-            <th>Information</th>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    Content
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <br>
-        <!-- End Box -->
         <?php
     }
 
