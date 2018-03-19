@@ -35,3 +35,4 @@ class DT_Zume_Hooks
         new DT_Zume_Hook_User();
     }
 }
+DT_Zume_Hooks::instance();
