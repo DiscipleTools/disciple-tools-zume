@@ -76,12 +76,12 @@ class DT_Zume {
             $template = get_option( 'template' );
             switch ( $template ) {
                 case 'zume-project-multilingual':
-                    $instance->zume();
                     $instance->shared();
+                    $instance->zume();
                     break;
                 case 'disciple-tools-theme':
-                    $instance->disciple_tools();
                     $instance->shared();
+                    $instance->disciple_tools();
                     break;
                 default: // if no option exists, then the plugin is forced to selection screen.
                     add_action( 'admin_notices', 'dt_zume_no_disciple_tools_theme_found' );
@@ -105,11 +105,10 @@ class DT_Zume {
 
     private function zume() {
         require_once( 'includes/site-link-system.php' ); // site linking system for Zume only, DT already has it installed
-        require_once( 'includes/admin/zume-menu-and-tabs.php' );
+        require_once( 'includes/zume-hooks.php' );
     }
 
     private function disciple_tools() {
-        require_once( 'includes/admin/dt-menu-and-tabs.php' );
     }
 
     /**
@@ -120,6 +119,8 @@ class DT_Zume {
      * @return void
      */
     private function shared() {
+        require_once( 'includes/admin/menu-and-tabs.php' );
+        require_once( 'includes/utility-functions.php' );
         require_once( 'includes/tables.php' );
     }
 

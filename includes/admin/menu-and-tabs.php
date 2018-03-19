@@ -39,6 +39,7 @@ class DT_Zume_Menu
     {
         $this->token = DT_Zume::get_instance()->token;
         add_action( "admin_menu", [ $this, "register_menu" ] );
+        add_action( 'admin_head', [ $this, 'scripts' ], 20 );
     } // End __construct()
 
     /**
@@ -48,14 +49,18 @@ class DT_Zume_Menu
      */
     public function register_menu()
     {
-        add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'content' ], 'dashicons-admin-generic', 59 );
-
+        if ( dt_zume_is_this_disciple_tools() ) {
+            add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'dt_content' ], 'dashicons-admin-generic', 59 );
+        }
+        else {
+            add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'zume_content' ], 'dashicons-admin-generic', 59 );
+        }
     }
 
     /**
      * Combined tabs preprocessor
      */
-    public function content()
+    public function dt_content()
     {
 
         if ( ! current_user_can( 'manage_dt' ) ) {
@@ -67,18 +72,18 @@ class DT_Zume_Menu
         $link = 'admin.php?page=' . $this->token . '&tab=';
 
         $tab_bar = [
-            [
-                'key'   => 'activity',
-                'label' => __( 'Activity', 'dt_zume' ),
-            ],
-            [
-                'key' => 'site_links',
-                'label' => __( 'Site Links', 'dt_zume' ),
-            ],
-            [
-                'key' => 'settings',
-                'label' => __( 'Settings', 'dt_zume' ),
-            ],
+        [
+        'key'   => 'activity',
+        'label' => __( 'Activity', 'dt_zume' ),
+        ],
+        [
+        'key' => 'site_links',
+        'label' => __( 'Site Links', 'dt_zume' ),
+        ],
+        [
+        'key' => 'settings',
+        'label' => __( 'Settings', 'dt_zume' ),
+        ],
         ];
 
         // determine active tabs
@@ -90,6 +95,46 @@ class DT_Zume_Menu
 
         $this->tab_loader( $title, $active_tab, $tab_bar, $link );
     }
+
+    /**
+     * Combined tabs preprocessor
+     */
+    public function zume_content()
+    {
+
+        if ( ! current_user_can( 'manage_dt' ) ) {
+            wp_die( esc_attr__( 'You do not have sufficient permissions to access this page.' ) );
+        }
+
+        $title = __( 'ZUME / DISCIPLE TOOLS - INTEGRATION' );
+
+        $link = 'admin.php?page=' . $this->token . '&tab=';
+
+        $tab_bar = [
+        [
+        'key'   => 'activity',
+        'label' => __( 'Activity', 'dt_zume' ),
+        ],
+        [
+        'key' => 'site_links',
+        'label' => __( 'Site Links', 'dt_zume' ),
+        ],
+        [
+        'key' => 'settings',
+        'label' => __( 'Settings', 'dt_zume' ),
+        ],
+        ];
+
+        // determine active tabs
+        $active_tab = 'activity';
+
+        if ( isset( $_GET["tab"] ) ) {
+            $active_tab = sanitize_key( wp_unslash( $_GET["tab"] ) );
+        }
+
+        $this->tab_loader( $title, $active_tab, $tab_bar, $link );
+    }
+
 
     /**
      * Tab Loader
@@ -104,6 +149,7 @@ class DT_Zume_Menu
         <div class="wrap">
 
             <h2><?php echo esc_attr( $title ) ?></h2>
+            <span class="text-light-grey"><?php echo esc_attr__( 'Active: Disciple Tools' ) ?></span>
 
             <h2 class="nav-tab-wrapper">
                 <?php foreach ( $tab_bar as $tab) : ?>
@@ -227,5 +273,14 @@ class DT_Zume_Menu
                 }
                 break;
         }
+    }
+
+    public function scripts() {
+
+        echo "<style>
+            .text-light-grey {
+                color: lightsteelblue;
+            }
+            </style>";
     }
 }
