@@ -3,12 +3,12 @@
  * Plugin Name: Disciple Tools - Zume
  * Plugin URI: https://github.com/ZumeProject/disciple-tools-zume
  * Description: Disciple Tools - Zume plugin integrates the Disciple Tools system into the Zume Project.
- * Version:  0.1.0
- * Author URI: https://github.com/ZumeProject
+ * Version:  0.1
+ * Author URI: https://github.com/DiscipleTools/
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-zume
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
- * Tested up to: 4.9
+ * Tested up to: 4.9.4
  *
  * @package Disciple_Tools
  * @link    https://github.com/DiscipleTools
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Gets the instance of the `DT_Zume` class.  This function is useful for quickly grabbing data
  * used throughout the plugin.
  *
- * @since  0.1
+ * @since  1.0
  * @access public
  * @return object
  */
@@ -41,12 +41,7 @@ function dt_zume() {
 }
 add_action( 'plugins_loaded', 'dt_zume' );
 
-/**
- * Singleton class for setting up the plugin.
- *
- * @since  0.1
- * @access public
- */
+
 class DT_Zume {
 
     /**
@@ -66,7 +61,7 @@ class DT_Zume {
     /**
      * Returns the instance.
      *
-     * @since  0.1
+     * @since  1.0
      * @access public
      * @return object
      */
@@ -77,7 +72,23 @@ class DT_Zume {
         if ( is_null( $instance ) ) {
             $instance = new dt_zume();
             $instance->setup();
-            $instance->includes();
+
+            $template = get_option( 'template' );
+            switch ( $template ) {
+                case 'zume-project-multilingual':
+                    $instance->zume();
+                    $instance->shared();
+                    break;
+                case 'disciple-tools-theme':
+                    $instance->disciple_tools();
+                    $instance->shared();
+                    break;
+                default: // if no option exists, then the plugin is forced to selection screen.
+                    add_action( 'admin_notices', 'dt_zume_no_disciple_tools_theme_found' );
+                    return new WP_Error( 'current_theme_not_dt', 'Disciple Tools Theme or Zúme Theme not active.' );
+                    break;
+            }
+
             $instance->setup_actions();
         }
         return $instance;
@@ -90,7 +101,15 @@ class DT_Zume {
      * @access private
      * @return void
      */
-    private function __construct() {
+    private function __construct() {}
+
+    private function zume() {
+        require_once( 'includes/site-link-system.php' ); // site linking system for Zume only, DT already has it installed
+        require_once( 'includes/admin/zume-menu-and-tabs.php' );
+    }
+
+    private function disciple_tools() {
+        require_once( 'includes/admin/dt-menu-and-tabs.php' );
     }
 
     /**
@@ -100,15 +119,8 @@ class DT_Zume {
      * @access public
      * @return void
      */
-    private function includes() {
-
-        // Call site link system if Disciple Tools is not the theme, else use this.
-        $current_theme = get_option( 'current_theme' );
-        if ( 'Zúme Project' === $current_theme ) {
-            require_once( 'includes/site-link-system.php' ); // site linking system
-        }
-
-        require_once( 'includes/admin/admin-menu-and-tabs.php' );
+    private function shared() {
+        require_once( 'includes/tables.php' );
     }
 
     /**
@@ -132,7 +144,7 @@ class DT_Zume {
 
         // Admin and settings variables
         $this->token             = 'dt_zume';
-        $this->version             = '0.1';
+        $this->version             = '1.0';
     }
 
     /**
@@ -143,10 +155,8 @@ class DT_Zume {
      * @return void
      */
     private function setup_actions() {
-
         // Internationalize the text strings used.
         add_action( 'plugins_loaded', array( $this, 'i18n' ), 2 );
-
     }
 
     /**
@@ -157,9 +167,32 @@ class DT_Zume {
      * @return void
      */
     public static function activation() {
-        // Add integration capacity to administrator based on manage_dt
-        $role = get_role( 'administrator' );
-        $role->add_cap( 'manage_dt' );
+        $template = get_option( 'template' );
+        switch ( $template ) {
+            case 'zume-project-multilingual':
+
+                // Add integration capacity to administrator based on manage_dt
+                $role = get_role( 'administrator' );
+                $role->add_cap( 'manage_dt' );
+
+                // add dt_admin role
+                if ( get_role( 'dt_admin' ) ) {
+                    remove_role( 'dt_admin' );
+                }
+                add_role(
+                    'dt_admin', __( 'DT Admin' ),
+                    [
+                    'read'                      => true, //access to admin
+                    'manage_dt'                 => true, // key capability for wp-admin dt administration
+                    ]
+                );
+                break;
+
+            case 'disciple-tools-theme':
+                break;
+            default: // if no option exists, then the plugin is forced to selection screen.
+                break;
+        }
     }
 
     /**
@@ -170,6 +203,7 @@ class DT_Zume {
      * @return void
      */
     public static function deactivation() {
+        DT_Site_Link_System::deactivate(); // Remove site link keys
     }
 
     /**
