@@ -649,7 +649,7 @@ class DT_Site_Link_System
 
                         return $keys;
                     } else {
-                        self::admin_notice( 'ID already exists.', 'error' );
+                        self::admin_notice( 'Site already exists.', 'error' );
                         return $keys;
                     }
                     break;
@@ -665,7 +665,7 @@ class DT_Site_Link_System
                     || ! isset( $_POST['site2'] )
                     || empty( $_POST['site2'] )
                     ){
-                        self::admin_notice( 'Missing id, token, or site fields.', 'error' );
+                        self::admin_notice( 'Missing label, token, or site fields.', 'error' );
                         return $keys;
                     }
 
@@ -676,7 +676,7 @@ class DT_Site_Link_System
 
                     $local_site = self::verify_one_site_is_local( $site1, $site2 );
                     if ( ! $local_site ) {
-                        self::admin_notice( 'Local site not found in submission. Either Site1 or Site2 must be this current website', 'error' );
+                        self::admin_notice( 'Local site not found in submission. Either Site 1 or Site 2 must be this current website', 'error' );
                         return $keys;
                     }
 
@@ -696,7 +696,7 @@ class DT_Site_Link_System
 
                 case 'delete':
                     if ( ! isset( $_POST['key'] ) ) {
-                        self::admin_notice( 'Delete: Key not found.', 'error' );
+                        self::admin_notice( 'Delete: Site not found.', 'error' );
                         return $keys;
                     }
                     unset( $keys[ $_POST['key'] ] );
