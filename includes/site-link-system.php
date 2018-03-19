@@ -669,8 +669,8 @@ class DT_Site_Link_System
                         return $keys;
                     }
 
-                    $id     = $id = sanitize_text_field( wp_unslash( trim( $_POST['id'] ) ) );
-                    $token  = trim( sanitize_key( wp_unslash( $_POST['token'] ) ) );
+                    $id    = trim( sanitize_text_field( wp_unslash( $_POST['id'] ) ) );
+                    $token = trim( sanitize_key( wp_unslash( $_POST['token'] ) ) );
                     $site1 = self::filter_url( sanitize_text_field( wp_unslash( $_POST['site1'] ) ) );
                     $site2 = self::filter_url( sanitize_text_field( wp_unslash( $_POST['site2'] ) ) );
 
