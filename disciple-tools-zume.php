@@ -109,6 +109,7 @@ class DT_Zume {
     }
 
     private function disciple_tools() {
+        require_once( 'includes/dt-endpoints.php' );
     }
 
     /**
@@ -122,6 +123,9 @@ class DT_Zume {
         require_once( 'includes/admin/menu-and-tabs.php' );
         require_once( 'includes/utility-functions.php' );
         require_once( 'includes/tables.php' );
+        require_once( 'includes/admin/wp-async-request.php' );
+        require_once( 'includes/zume-send-contact.php' );
+
     }
 
     /**
@@ -327,3 +331,19 @@ if ( !function_exists( 'dt_write_log' ) ) {
         }
     }
 }
+
+/**
+ * This utility gets users meta data and collapses into a flat array from a nested array.
+ *
+ * @param null $user_id
+ *
+ * @return array
+ */
+function dt_zume_get_user_meta( $user_id = null ) {
+    if ( is_null( $user_id ) ) {
+        $user_id = get_current_user_id();
+    }
+    return array_map( function ( $a ) { return $a[0];
+    }, get_user_meta( $user_id ) );
+}
+
