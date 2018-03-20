@@ -188,6 +188,7 @@ class DT_Zume_Menu
         // begin columns template
         $this->template( 'begin', 1 );
 
+
         DT_Zume_Activity::list_box();
 
         // end columns template
@@ -209,6 +210,14 @@ class DT_Zume_Menu
     public function tab_settings() {
         // begin columns template
         $this->template( 'begin' );
+
+        // Runs validation of the database when page is loaded.
+        $object = new DT_Zume_Zume();
+        $object->verify_foreign_key_installed();
+        $object->verify_check_sum_installed();
+
+        $this->site_default_metabox();
+        $this->system_health_metabox();
 
         // begin right column template
         $this->template( 'right_column' );
@@ -283,4 +292,97 @@ class DT_Zume_Menu
             }
             </style>";
     }
+
+    public static function site_default_metabox()
+    {
+        // Check for post
+        if ( isset( $_POST['dt_site_default_nonce'] ) && ! empty( $_POST['dt_site_default_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_site_default_nonce'] ) ), 'dt_site_default_'. get_current_user_id() ) ) {
+            if ( isset( $_POST['default-site'] ) && ! empty( $_POST['default-site'] ) ) {
+                $default_site = sanitize_key( wp_unslash( $_POST['default-site'] ) );
+                update_option( 'zume_default_site', $default_site );
+            }
+        }
+        $keys = DT_Site_Link_System::get_site_keys();
+        $current_key = get_option( 'zume_default_site' );
+
+        ?>
+        <form method="post" action="">
+            <?php wp_nonce_field( 'dt_site_default_'. get_current_user_id(), 'dt_site_default_nonce', false, true ) ?>
+
+            <!-- Box -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <td>
+                        <?php esc_html_e( 'Set Default Transfer Site' ) ?>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <select id="default-site" name="default-site">
+                            <?php foreach ($keys as $key => $value ) : ?>
+                                <option value="<?php echo esc_attr( $key ) ?>" <?php $current_key == $key ? print esc_attr( 'selected' ) : print '';  ?> >
+                                    <?php echo esc_html( $value['id'] )?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <button class="button" type="submit"><?php esc_html_e( 'Update' ) ?></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <!-- End Box -->
+        </form>
+        <?php
+    }
+
+    public static function system_health_metabox()
+    {
+        $object = new DT_Zume_Zume();
+
+        ?>
+        <form method="post" action="">
+
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <td colspan="2">
+                        <?php esc_html_e( 'Connection Health' ) ?>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <?php esc_html_e( 'Foreign Keys Needing Update' ) ?>:
+                    </td>
+                    <td>
+                        <?php echo esc_html( $object->verify_foreign_key_installed() )  ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <?php esc_html_e( 'Check Sum Records Needing Update' ) ?>:
+                    </td>
+                    <td>
+                        <?php echo esc_html( $object->verify_check_sum_installed() )  ?>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+            <br>
+
+        </form>
+        <?php
+    }
+
 }

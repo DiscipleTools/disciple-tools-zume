@@ -11,11 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-/**
- * Initialize instance
- */
-
-
 
 /**
  * Class DT_Webform_Home_Endpoints
@@ -72,21 +67,21 @@ class DT_Zume_DT_Endpoints
         $site_key = DT_Site_Link_System::verify_transfer_token( $params['transfer_token'] );
 
         dt_write_log( $params );
-        dt_write_log( $site_key );
 
         if ( ! is_wp_error( $site_key ) && $site_key ) {
-            if ( isset( $params['transfer_records'] ) && ! empty( $params['transfer_records'] ) ) {
 
-                foreach ( $params['transfer_records'] as $record ) {
-                    $result = Disciple_Tools_Contacts::create_contact( $record, false );
+            if ( isset( $params['transfer_record'] ) && ! empty( $params['transfer_record'] ) ) {
 
-                    if ( is_wp_error( $result ) || empty( $result ) ) {
-                        $error[] = new WP_Error( 'failed_insert', 'Failed record ' . $record['title'] );
-                    } else {
-                        $old_records[] = $record['title'];
-                    }
+                $post_id = Disciple_Tools_Contacts::create_contact( $params['transfer_record'], false );
+
+                if ( is_wp_error( $post_id ) || empty( $post_id ) ) {
+                    return new WP_Error( 'failed_insert', 'Failed record creation' );
                 }
-                return $old_records;
+
+                update_post_meta( $post_id, 'zume_foreign_key', $params['zume_foreign_key'] );
+                update_post_meta( $post_id, 'zume_language', $params['zume_language'] );
+                update_post_meta( $post_id, 'zume_check_sum', $params['zume_check_sum'] );
+
 
             } else {
                 return new WP_Error( 'malformed_content', 'Did not find `selected_records` in array.' );
