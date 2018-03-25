@@ -45,7 +45,7 @@ class DT_Zume_Zume
             ];
         }
         $user_data_string = ''; // add raw record into starting note
-        foreach( $user_data as $key => $item ) {
+        foreach ( $user_data as $key => $item ) {
             if ( ! 'zume_foreign_key' === $key && ! 'zume_check_sum' === $key && ! empty( $item ) ) {
                 $user_data_string .= $item . '; ';
             }
@@ -151,7 +151,7 @@ class DT_Zume_Zume
             'last_name' => sanitize_text_field( wp_unslash( $user_meta['last_name'] ?? '' ) ),
             'user_registered' => $user->data->user_registered,
             'user_email' => sanitize_email( wp_unslash( $user->data->user_email ) ),
-            'zume_language' => maybe_unserialize($user_meta['zume_language'] ?? zume_current_language() ),
+            'zume_language' => maybe_unserialize( $user_meta['zume_language'] ?? zume_current_language() ),
             'zume_phone_number' => sanitize_text_field( wp_unslash( $user_meta['zume_phone_number'] ?? '' ) ),
             'zume_user_address' => sanitize_text_field( wp_unslash( $user_meta['zume_user_address'] ?? '' ) ),
             'zume_address_from_ip' => $user_meta['zume_address_from_ip'] ?? '',

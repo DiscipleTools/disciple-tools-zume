@@ -41,16 +41,16 @@ function dt_zume_remote_send( $endpoint, $url, $args ) {
 function dt_zume_async_task_processor() {
     $tasks = get_user_meta( get_current_user_id(), 'zume_async_task' );
     if ( ! empty( $tasks ) ) {
-        foreach( $tasks as $task ) {
+        foreach ( $tasks as $task ) {
 
             switch ( $task ) {
                 case 'registration':
                     try {
                         $send_new_user = new DT_Zume_Send_New_User();
                         $send_new_user->launch(
-                        [
+                            [
                             'user_id'   => get_current_user_id(),
-                        ]
+                            ]
                         );
                     } catch ( Exception $e ) {
                         dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
@@ -66,7 +66,7 @@ function dt_zume_async_task_processor() {
         delete_user_meta( get_current_user_id(), 'zume_async_task' );
     }
 }
-add_action('zume_dashboard_footer', 'dt_zume_async_task_processor');
+add_action( 'zume_dashboard_footer', 'dt_zume_async_task_processor' );
 
 
 /**
@@ -80,10 +80,10 @@ class DT_Zume_Send_New_User extends Disciple_Tools_Async_Task
 
     public function send()
     {
-        // @codingStandardsIgnoreLine
+            // @codingStandardsIgnoreStart
         if( isset( $_POST[ 'action' ] ) && sanitize_key( wp_unslash( $_POST[ 'action' ] ) ) == 'dt_async_'.$this->action && isset( $_POST[ '_nonce' ] ) && $this->verify_async_nonce( sanitize_key( wp_unslash( $_POST[ '_nonce' ] ) ) ) ) {
-
             $user_id = sanitize_key( wp_unslash( $_POST[0]['user_id'] ) );
+            // @codingStandardsIgnoreEnd
 
             $object = new DT_Zume_Zume();
             $object->send_user_data( $user_id );

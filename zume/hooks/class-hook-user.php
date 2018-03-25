@@ -5,7 +5,7 @@ class DT_Zume_Hook_User extends DT_Zume_Hook_Base {
 
     public function hooks_user_register( $user_id ) {
         add_user_meta( $user_id, 'zume_async_task', 'registration', false );
-        dt_write_log('@' . __METHOD__ );
+        dt_write_log( '@' . __METHOD__ );
     }
 
     public function hooks_profile_update( $user_id ) {
@@ -22,7 +22,7 @@ class DT_Zume_Hook_User extends DT_Zume_Hook_Base {
     }
 
     public function hooks_wp_login( $user_login, $user ) {
-        dt_write_log('@' . __METHOD__ );
+        dt_write_log( '@' . __METHOD__ );
     }
 
     public function __construct() {
