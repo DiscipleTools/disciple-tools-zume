@@ -30,9 +30,11 @@ class DT_Zume_Hooks
         // Load all our hooks.
         include( 'hooks/class-hook-field-updates.php' );
         include( 'hooks/class-hook-user.php' );
+        include( 'hooks/class-hook-groups.php' );
 
         new DT_Zume_Hook_Field_Updates();
         new DT_Zume_Hook_User();
+        new DT_Zume_Hook_Groups();
     }
 }
 DT_Zume_Hooks::instance();

@@ -5,104 +5,142 @@
  */
 
 /**
- * Send Post Request
- * $args = [
- *  'method' => 'POST',
- *   'body' => [
- *   'transfer_token' => $site['transfer_token'],
- *   'transfer_record' => $fields,
- *   'zume_foreign_key' => $user_data['zume_foreign_key'],
- *   'zume_language' => $user_data['zume_language'],
- *   'zume_check_sum' => $user_data['zume_check_sum'],
- * ]
- * ];
- *
- * @param $endpoint
- * @param $url
- * @param $args
- *
- * @return array|\WP_Error
+ * Function checker for async post requests
+ * This runs on every page load looking for an async post request
  */
-function dt_zume_remote_send( $endpoint, $url, $args ) {
-
-    $result = wp_remote_post( 'https://' . $url . '/wp-json/dt-public/v1/zume/' . $endpoint, $args );
-
-    if ( is_wp_error( $result ) ) {
-        return new WP_Error( 'failed_remote_get', $result->get_error_message() );
-    }
-    return $result;
-}
-
-/**
- * Temporarily store a need for update status.
- * Used especially in the context of registration and logout, so the process runs on next login
- *
- */
-function dt_zume_async_task_processor() {
-    $tasks = get_user_meta( get_current_user_id(), 'zume_async_task' );
-    if ( ! empty( $tasks ) ) {
-        foreach ( $tasks as $task ) {
-
-            switch ( $task ) {
-                case 'registration':
-                    try {
-                        $send_new_user = new DT_Zume_Send_New_User();
-                        $send_new_user->launch(
-                            [
-                            'user_id'   => get_current_user_id(),
-                            ]
-                        );
-                    } catch ( Exception $e ) {
-                        dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
-                    }
-
-                    delete_user_meta( get_current_user_id(), 'zume_async_task' );
-                    break;
-                default:
-                    break;
-            }
+function dt_load_async_send()
+{
+    // check for create new contact
+    if ( isset( $_POST['_wp_nonce'] )
+    && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wp_nonce'] ) ) )
+    && isset( $_POST['action'] )
+    && sanitize_key( wp_unslash( $_POST['action'] ) ) == 'dt_async_send_new_user' ) {
+        try {
+            $insert_location = new DT_Zume_Send_New_Contact();
+            $insert_location->send();
+        } catch ( Exception $e ) {
+            dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
         }
-
-        delete_user_meta( get_current_user_id(), 'zume_async_task' );
     }
+
+    // check for update contact
+    if ( isset( $_POST['_wp_nonce'] )
+    && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wp_nonce'] ) ) )
+    && isset( $_POST['action'] )
+    && sanitize_key( wp_unslash( $_POST['action'] ) ) == 'dt_async_send_update_contact' ) {
+        try {
+            $send = new DT_Zume_Send_Update_Contact();
+            $send->send();
+        } catch ( Exception $e ) {
+            dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
+        }
+    }
+
+    // check for contact last login
+    if ( isset( $_POST['_wp_nonce'] )
+    && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wp_nonce'] ) ) )
+    && isset( $_POST['action'] )
+    && sanitize_key( wp_unslash( $_POST['action'] ) ) == 'dt_async_send_contact_last_login' ) {
+        try {
+            $send = new DT_Zume_Send_Last_Login();
+            $send->send();
+        } catch ( Exception $e ) {
+            dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
+        }
+    }
+
 }
-add_action( 'zume_dashboard_footer', 'dt_zume_async_task_processor' );
+add_action( 'init', 'dt_load_async_send' );
 
 
 /**
  * Class Disciple_Tools_Insert_Location
  */
-class DT_Zume_Send_New_User extends Disciple_Tools_Async_Task
+class DT_Zume_Send_New_Contact extends Disciple_Tools_Async_Task
 {
-    protected $action = 'send_new_user';
+    protected $action = 'send_new_contact';
 
     protected function prepare_data( $data ) { return $data; }
 
     public function send()
     {
             // @codingStandardsIgnoreStart
-        if( isset( $_POST[ 'action' ] ) && sanitize_key( wp_unslash( $_POST[ 'action' ] ) ) == 'dt_async_'.$this->action && isset( $_POST[ '_nonce' ] ) && $this->verify_async_nonce( sanitize_key( wp_unslash( $_POST[ '_nonce' ] ) ) ) ) {
+        if( isset( $_POST[ 'action' ] )
+            && sanitize_key( wp_unslash( $_POST[ 'action' ] ) ) == 'dt_async_'.$this->action
+            && isset( $_POST[ '_nonce' ] )
+            && $this->verify_async_nonce( sanitize_key( wp_unslash( $_POST[ '_nonce' ] ) ) ) ) {
+
             $user_id = sanitize_key( wp_unslash( $_POST[0]['user_id'] ) );
             // @codingStandardsIgnoreEnd
 
             $object = new DT_Zume_Zume();
-            $object->send_user_data( $user_id );
+            $object->send_new_contact( $user_id );
 
         } // end if check
+        return;
     }
 
     protected function run_action(){}
 }
-function dt_load_async_send_new_user()
+
+/**
+ * Class Disciple_Tools_Insert_Location
+ */
+class DT_Zume_Send_Update_Contact extends Disciple_Tools_Async_Task
 {
-    if ( isset( $_POST['_wp_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wp_nonce'] ) ) ) && isset( $_POST['action'] ) && sanitize_key( wp_unslash( $_POST['action'] ) ) == 'dt_async_send_new_user' ) {
-        try {
-            $insert_location = new DT_Zume_Send_New_User();
-            $insert_location->send();
-        } catch ( Exception $e ) {
-            dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
-        }
+    protected $action = 'send_update_contact';
+
+    protected function prepare_data( $data ) { return $data; }
+
+    public function send()
+    {
+        // @codingStandardsIgnoreStart
+        if( isset( $_POST[ 'action' ] )
+        && sanitize_key( wp_unslash( $_POST[ 'action' ] ) ) == 'dt_async_'.$this->action
+        && isset( $_POST[ '_nonce' ] )
+        && $this->verify_async_nonce( sanitize_key( wp_unslash( $_POST[ '_nonce' ] ) ) ) ) {
+
+            $user_id = sanitize_key( wp_unslash( $_POST[0]['user_id'] ) );
+            // @codingStandardsIgnoreEnd
+
+            $object = new DT_Zume_Zume();
+            $object->send_update_contact( $user_id );
+
+        } // end if check
+        return;
     }
+
+    protected function run_action(){}
 }
-add_action( 'init', 'dt_load_async_send_new_user' );
+
+/**
+ * Class Disciple_Tools_Insert_Location
+ */
+class DT_Zume_Send_Last_Login extends Disciple_Tools_Async_Task
+{
+    protected $action = 'send_contact_last_login';
+
+    protected function prepare_data( $data ) { return $data; }
+
+    public function send()
+    {
+        // @codingStandardsIgnoreStart
+        if( isset( $_POST[ 'action' ] )
+        && sanitize_key( wp_unslash( $_POST[ 'action' ] ) ) == 'dt_async_'.$this->action
+        && isset( $_POST[ '_nonce' ] )
+        && $this->verify_async_nonce( sanitize_key( wp_unslash( $_POST[ '_nonce' ] ) ) ) ) {
+
+            $user_id = sanitize_key( wp_unslash( $_POST[0]['user_id'] ) );
+            // @codingStandardsIgnoreEnd
+
+            $object = new DT_Zume_Zume();
+            $object->send_contact_last_login( $user_id );
+
+        } // end if check
+        return;
+    }
+
+    protected function run_action(){}
+}
+
 
