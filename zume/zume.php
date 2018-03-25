@@ -8,6 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
+
+
 class DT_Zume_Zume
 {
     public static function temp_call() {
@@ -19,43 +21,44 @@ class DT_Zume_Zume
 
     public function send_user_data( $user_id ) {
 
-        // get prepared data for user
+        // Get prepared data for user
         $user_data = $this->get_transfer_user_data( $user_id );
 
-        $language = $user_data['zume_language'];
-        if ( function_exists( 'pll_the_languages' ) ) {
-            $language = pll_current_language( 'name' );
-        }
-
-        // Build extra field data
-        $notes = [
-            'user_registered' => $user_data['user_registered'],
-            'zume_language' => $language,
-        ];
-
-        $phone = $user_data['zume_phone_number'] ?? '';
-        $address = $user_data['zume_user_address'] ?: $user_data['zume_address_from_ip'] ?: '';
-
-        // Build record data
+        // Build new DT record data
         $fields = [
-        'title' => $user_data['title'],
-        "contact_phone" => [
-            [ "value" => $phone ], //create
-        ],
-        "contact_email" => [
-            [ "value" => $user_data['user_email'] ], //create
-        ],
-        "contact_address" => [
-            [ "value" => $address ]
-        ],
-            'notes' => $notes
+            'title' => $user_data['title'],
+            "contact_email" => [
+                [ "value" => $user_data['user_email'] ],
+            ]
         ];
 
+        if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
+            $phone = $user_data['zume_phone_number'] ?? '';
+            $fields['contact_phone'] = [
+                [ "value" => $phone ],
+            ];
+        }
+        if ( ! empty( $user_data['zume_user_address'] ) || ! empty( $user_data['zume_address_from_ip'] ) ) { // add address
+            $address = $user_data['zume_user_address'] ?: $user_data['zume_address_from_ip'];
+            $fields['contact_address'] = [
+                [ "value" => $address ]
+            ];
+        }
+        $user_data_string = ''; // add raw record into starting note
+        foreach( $user_data as $key => $item ) {
+            if ( ! 'zume_foreign_key' === $key && ! 'zume_check_sum' === $key && ! empty( $item ) ) {
+                $user_data_string .= $item . '; ';
+            }
+        }
+        $fields['notes'] = [
+            'user_snapshot' => $user_data_string,
+        ];
+
+        // Get target site for transfer
         $site_key = $this->filter_for_site_key( $user_data );
         if ( ! $site_key ) {
             return false; // no sites setup
         }
-
         $site = $this->get_site_details( $site_key );
 
         // Send remote request
@@ -64,22 +67,16 @@ class DT_Zume_Zume
             'body' => [
                 'transfer_token' => $site['transfer_token'],
                 'transfer_record' => $fields,
-                'zume_foreign_key' => $user_data['zume_foreign_key'],
-                'zume_language' => $user_data['zume_language'],
-                'zume_check_sum' => $user_data['zume_check_sum'],
+                'raw_record' => $user_data,
             ]
         ];
-
-        $result = wp_remote_post( 'https://' . $site['url'] . '/wp-json/dt-public/v1/zume/create_new_contacts', $args );
-
-        if ( is_wp_error( $result ) ) {
-            dt_write_log( $result );
-            return new WP_Error( 'failed_remote_get', $result->get_error_message() );
-        }
+        $result = dt_zume_remote_send( 'create_new_contacts', $site['url'], $args );
 
         dt_write_log( $result );
         return true;
     }
+
+
 
     /**
      * @param $user_data
@@ -148,15 +145,15 @@ class DT_Zume_Zume
         }
 
         $prepared_user_data = [
-            'title' => $full_name ?: $user_meta['nickname'] ?: $user->data->display_name,
+            'title' => sanitize_text_field( wp_unslash( ucwords( $full_name ?: $user_meta['nickname'] ?: $user->data->display_name ) ) ),
             'user_login' => $user->data->user_login,
-            'first_name' => $user_meta['first_name'] ?? '',
-            'last_name' => $user_meta['last_name'] ?? '',
+            'first_name' => sanitize_text_field( wp_unslash( $user_meta['first_name'] ?? '' ) ),
+            'last_name' => sanitize_text_field( wp_unslash( $user_meta['last_name'] ?? '' ) ),
             'user_registered' => $user->data->user_registered,
-            'user_email' => $user->data->user_email,
-            'zume_language' => $user_meta['zume_language'] ?? zume_current_language(),
-            'zume_phone_number' => $user_meta['zume_phone_number'] ?? '',
-            'zume_user_address' => $user_meta['zume_user_address'] ?? '',
+            'user_email' => sanitize_email( wp_unslash( $user->data->user_email ) ),
+            'zume_language' => maybe_unserialize($user_meta['zume_language'] ?? zume_current_language() ),
+            'zume_phone_number' => sanitize_text_field( wp_unslash( $user_meta['zume_phone_number'] ?? '' ) ),
+            'zume_user_address' => sanitize_text_field( wp_unslash( $user_meta['zume_user_address'] ?? '' ) ),
             'zume_address_from_ip' => $user_meta['zume_address_from_ip'] ?? '',
             'zume_foreign_key' => $user_meta['zume_foreign_key'] ?? self::get_foreign_key( $user_id ),
         ];

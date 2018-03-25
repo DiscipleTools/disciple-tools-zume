@@ -104,13 +104,14 @@ class DT_Zume {
     private function __construct() {}
 
     private function zume() {
-        require_once( 'includes/site-link-system.php' ); // site linking system for Zume only, DT already has it installed
-        require_once( 'includes/zume-hooks.php' );
-        require_once( 'includes/zume.php' );
+        require_once( 'includes/site-link-system.php' ); // site linking system for Zume only, DT already has it installed in core
+        require_once( 'zume/zume-hooks.php' );
+        require_once( 'zume/zume.php' );
+        require_once( 'zume/zume-async-send.php' );
     }
 
     private function disciple_tools() {
-        require_once( 'includes/dt-endpoints.php' );
+        require_once( 'dt/dt-endpoints.php' );
     }
 
     /**
@@ -125,7 +126,7 @@ class DT_Zume {
         require_once( 'includes/utility-functions.php' );
         require_once( 'includes/tables.php' );
         require_once( 'includes/admin/wp-async-request.php' );
-        require_once( 'includes/zume-send-contact.php' );
+
 
     }
 

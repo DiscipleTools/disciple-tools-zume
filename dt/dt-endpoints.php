@@ -57,7 +57,7 @@ class DT_Zume_DT_Endpoints
      * Respond to transfer request of files
      *
      * @param \WP_REST_Request $request
-     * @return array|\WP_Error
+     * @return bool|\WP_Error
      */
     public function create_new_contacts( WP_REST_Request $request ) {
 
@@ -78,10 +78,9 @@ class DT_Zume_DT_Endpoints
                     return new WP_Error( 'failed_insert', 'Failed record creation' );
                 }
 
-                update_post_meta( $post_id, 'zume_foreign_key', $params['zume_foreign_key'] );
-                update_post_meta( $post_id, 'zume_language', $params['zume_language'] );
-                update_post_meta( $post_id, 'zume_check_sum', $params['zume_check_sum'] );
+                update_post_meta( $post_id, 'zume_raw_record', $params['raw_record'] );
 
+                return true;
 
             } else {
                 return new WP_Error( 'malformed_content', 'Did not find `selected_records` in array.' );

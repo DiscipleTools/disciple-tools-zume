@@ -1,4 +1,7 @@
 <?php
+/**
+ * Misc utility functions
+ */
 
 function dt_zume_is_this_zumeproject() : bool {
     $current_theme = get_option( 'current_theme' );
