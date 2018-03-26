@@ -60,6 +60,15 @@ class DT_Zume_DT_Endpoints
             ],
             ]
         );
+
+        register_rest_route(
+            $namespace, '/zume/contact_last_login', [
+            [
+            'methods'  => WP_REST_Server::CREATABLE,
+            'callback' => [ $this, 'contact_last_login' ],
+            ],
+            ]
+        );
     }
 
     /**
@@ -164,7 +173,7 @@ class DT_Zume_DT_Endpoints
                 dt_activity_insert(
                     [
                     'action' => 'logged_into_zume',
-                    'object_type' => 'Post',
+                    'object_type' => 'contacts',
                     'object_subtype' => 'Contacts',
                     'object_id' => $post_id,
                     'object_name' => get_the_title( $post_id ),
@@ -195,7 +204,20 @@ class DT_Zume_DT_Endpoints
         ) );
 
         if ( ! $post_id ) {
-            return false;
+            /**
+             * This is a responsive contact creation. If the foreign key supplied is not found in the system, then
+             * this triggers a get contact by foreign key response to the Zume server and then creates a contact.
+             * If the foreign key is not valid, it fails here, but if it is valid, then a new contact is created
+             * and the new post_id is returned.
+             *
+             * This method both allows contacts to not be created only on registration, but on actual login. Also, it
+             * provides a way for previous users or those registered outside of the registration hook, to be converted
+             * to DT.
+             */
+            $post_id = DT_Zume_DT::create_contact_by_zume_foreign_key( $zume_foreign_key ); // if no post_id found, go back to zume get contact and create one
+            if ( is_wp_error( $post_id ) ) {
+                return false;
+            }
         }
         return $post_id;
     }

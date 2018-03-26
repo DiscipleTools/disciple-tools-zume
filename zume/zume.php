@@ -7,9 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-
-
-
+/**
+ * Class DT_Zume_Zume
+ */
 class DT_Zume_Zume
 {
 
@@ -18,42 +18,16 @@ class DT_Zume_Zume
         // Get prepared data for user
         $user_data = $this->get_transfer_user_data( $user_id );
 
-        // Build new DT record data
-        $fields = [
-            'title' => $user_data['title'],
-            "contact_email" => [
-                [ "value" => $user_data['user_email'] ],
-            ]
-        ];
-
-        if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
-            $phone = $user_data['zume_phone_number'] ?? '';
-            $fields['contact_phone'] = [
-                [ "value" => $phone ],
-            ];
-        }
-        if ( ! empty( $user_data['zume_user_address'] ) || ! empty( $user_data['zume_address_from_ip'] ) ) { // add address
-            $address = $user_data['zume_user_address'] ?: $user_data['zume_address_from_ip'];
-            $fields['contact_address'] = [
-                [ "value" => $address ]
-            ];
-        }
-        $user_data_string = ''; // add raw record into starting note
-        foreach ( $user_data as $key => $item ) {
-            if ( ! 'zume_foreign_key' === $key && ! 'zume_check_sum' === $key && ! empty( $item ) ) {
-                $user_data_string .= $item . '; ';
-            }
-        }
-        $fields['notes'] = [
-            'user_snapshot' => $user_data_string,
-        ];
-
         // Get target site for transfer
-        $site_key = $this->filter_for_site_key( $user_data );
+        $site_key = dt_zume_filter_for_site_key( $user_data );
         if ( ! $site_key ) {
             return; // no sites setup
         }
-        $site = $this->get_site_details( $site_key );
+
+        $site = dt_zume_get_site_details( $site_key );
+
+        // Build new DT record data
+        $fields = $this->build_user_transfer_record( $user_data );
 
         // Send remote request
         $args = [
@@ -71,17 +45,52 @@ class DT_Zume_Zume
         return;
     }
 
+    public function build_user_transfer_record( $user_data ) {
+        // Build new DT record data
+        $fields = [
+        'title' => $user_data['title'],
+        "contact_email" => [
+        [ "value" => $user_data['user_email'] ],
+        ]
+        ];
+
+        if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
+            $phone = $user_data['zume_phone_number'] ?? '';
+            $fields['contact_phone'] = [
+            [ "value" => $phone ],
+            ];
+        }
+        if ( ! empty( $user_data['zume_user_address'] ) || ! empty( $user_data['zume_address_from_ip'] ) ) { // add address
+            $address = $user_data['zume_user_address'] ?: $user_data['zume_address_from_ip'];
+            $fields['contact_address'] = [
+            [ "value" => $address ]
+            ];
+        }
+        $user_data_string = ''; // add raw record into starting note
+        foreach ( $user_data as $key => $item ) {
+            if ( ! 'zume_foreign_key' === $key && ! 'zume_check_sum' === $key && ! empty( $item ) ) {
+                $user_data_string .= $item . '; ';
+            }
+        }
+        $fields['notes'] = [
+        'user_snapshot' => $user_data_string,
+        ];
+
+        return $fields;
+    }
+
     public function send_update_contact( $user_id ) {
+        dt_write_log( __METHOD__ );
 
         // Get prepared data for user
         $user_data = $this->get_transfer_user_data( $user_id );
 
         // Get target site for transfer
-        $site_key = $this->filter_for_site_key( $user_data );
+        $site_key = dt_zume_filter_for_site_key( $user_data );
         if ( ! $site_key ) {
             return; // no sites setup
         }
-        $site = $this->get_site_details( $site_key );
+        $site = dt_zume_get_site_details( $site_key );
 
         // Send remote request
         $args = [
@@ -93,22 +102,22 @@ class DT_Zume_Zume
         ];
         $result = dt_zume_remote_send( 'update_contact', $site['url'], $args );
 
-        dt_write_log( __METHOD__ );
         dt_write_log( $result );
         return;
     }
 
     public function send_contact_last_login( $user_id ) {
+        dt_write_log( __METHOD__ );
 
         $zume_foreign_key = $this->get_foreign_key( $user_id );
-        $time = time();
+        $time = current_time('mysql');
 
         // Get target site for transfer
-        $site_key = $this->filter_for_site_key();
+        $site_key = dt_zume_filter_for_site_key();
         if ( ! $site_key ) {
             return; // no sites setup
         }
-        $site = $this->get_site_details( $site_key );
+        $site = dt_zume_get_site_details( $site_key );
 
         // Send remote request
         $args = [
@@ -119,65 +128,11 @@ class DT_Zume_Zume
                 'last_login' => $time,
             ]
         ];
-        $result = dt_zume_remote_send( 'update_contact', $site['url'], $args );
+        $result = dt_zume_remote_send( 'contact_last_login', $site['url'], $args );
 
-        dt_write_log( __METHOD__ );
         dt_write_log( $result );
         return;
     }
-
-    /**
-     * Filters for the appropriate site key
-     *
-     * @param $user_data
-     *
-     * @return bool|int|string
-     */
-    public function filter_for_site_key( $user_data = null ) {
-
-        // @TODO Potentially add routing logic.
-        // Evaluate routing factors of the user_data to route the user to a certain site.
-        // Is language set, then potentially route to language DT site
-        // Is location set, then potentially route to location site
-
-        $key = get_option( 'zume_default_site' ); // Currently, the default site is returned as the only routing option.
-        if ( ! $key ) {
-
-            $keys = DT_Site_Link_System::get_site_keys();
-            if ( empty( $keys ) ) {
-                return false;
-            }
-
-            foreach ( $keys as $key => $value ) { //picks first site, modifies the $key value, updates option
-                update_option( 'zume_site_default', $key );
-                break;
-            }
-        }
-        return $key;
-    }
-
-    /**
-     * Get the token and url of the site
-     *
-     * @param $site_key
-     *
-     * @return array
-     */
-    public function get_site_details( $site_key ) {
-        $keys = DT_Site_Link_System::get_site_keys();
-
-        $site1 = $keys[$site_key]['site1'];
-        $site2 = $keys[$site_key]['site2'];
-
-        $url = DT_Site_Link_System::get_non_local_site( $site1, $site2 );
-        $transfer_token = DT_Site_Link_System::create_transfer_token_for_site( $site_key );
-
-        return [
-            'url' => $url,
-            'transfer_token' => $transfer_token
-        ];
-    }
-
 
     public function get_transfer_user_data( $user_id = null ) {
         if ( is_null( $user_id ) ) {
@@ -215,12 +170,23 @@ class DT_Zume_Zume
     }
 
     public static function get_foreign_key( $user_id ) {
-        $key = get_user_meta( $user_id, 'zume_foreign_key' );
-        if ( empty( $current_key ) ) {
+        $key = get_user_meta( $user_id, 'zume_foreign_key', true );
+        if ( empty( $key ) ) {
             $key = DT_Site_Link_System::generate_token( 16 );
             update_user_meta( $user_id, 'zume_foreign_key', $key );
         }
         return $key;
+    }
+
+    public static function get_user_by_foreign_key( $zume_foreign_key ) {
+        global $wpdb;
+        $user_id = $wpdb->get_var( $wpdb->prepare( "
+            SELECT user_id FROM $wpdb->usermeta WHERE meta_key = 'zume_foreign_key' AND meta_value = %s
+        ",
+        $zume_foreign_key
+        ) );
+
+        return $user_id;
     }
 
     /**

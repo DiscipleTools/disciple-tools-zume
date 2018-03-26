@@ -4,24 +4,26 @@ if ( ! defined( 'ABSPATH' ) ) { exit; } // Exit if accessed directly
 class DT_Zume_Hook_User extends DT_Zume_Hook_Base {
 
     public function hooks_user_register( $user_id ) {
-        add_user_meta( $user_id, 'zume_async_task', 'registration', false ); // leave update task to be ran on next logon
+        $new_key = DT_Zume_Zume::get_foreign_key( $user_id );
+        add_user_meta( $user_id, 'zume_foreign_key', $new_key, true ); // leave update task to be ran on next logon
     }
 
     public function hooks_profile_update( $user_id ) {
-        try {
-            $send_new_user = new DT_Zume_Send_Update_Contact();
-            $send_new_user->launch(
-                [
-                    'user_id'   => $user_id,
-                ]
-            );
-        } catch ( Exception $e ) {
-            dt_write_log( '@' . __METHOD__ );
-            dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
-        }
+//        try {
+//            $send_new_user = new DT_Zume_Send_Update_Contact();
+//            $send_new_user->launch(
+//                [
+//                    'user_id'   => $user_id,
+//                ]
+//            );
+//        } catch ( Exception $e ) {
+//            dt_write_log( '@' . __METHOD__ );
+//            dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
+//        }
     }
 
     public function hooks_wp_login( $user_login, $user ) {
+        dt_zume_async_task_processor();
         dt_write_log( '@' . __METHOD__ );
         try {
             $send_new_user = new DT_Zume_Send_Last_Login();

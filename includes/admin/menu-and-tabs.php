@@ -73,21 +73,17 @@ class DT_Zume_Menu
 
         $tab_bar = [
         [
-        'key'   => 'activity',
-        'label' => __( 'Activity', 'dt_zume' ),
-        ],
-        [
         'key' => 'site_links',
         'label' => __( 'Site Links', 'dt_zume' ),
         ],
         [
-        'key' => 'settings',
+        'key' => 'dt_settings',
         'label' => __( 'Settings', 'dt_zume' ),
         ],
         ];
 
         // determine active tabs
-        $active_tab = 'activity';
+        $active_tab = 'site_links';
 
         if ( isset( $_GET["tab"] ) ) {
             $active_tab = sanitize_key( wp_unslash( $_GET["tab"] ) );
@@ -112,21 +108,17 @@ class DT_Zume_Menu
 
         $tab_bar = [
         [
-        'key'   => 'activity',
-        'label' => __( 'Activity', 'dt_zume' ),
-        ],
-        [
         'key' => 'site_links',
         'label' => __( 'Site Links', 'dt_zume' ),
         ],
         [
-        'key' => 'settings',
+        'key' => 'zume_settings',
         'label' => __( 'Settings', 'dt_zume' ),
         ],
         ];
 
         // determine active tabs
-        $active_tab = 'activity';
+        $active_tab = 'site_links';
 
         if ( isset( $_GET["tab"] ) ) {
             $active_tab = sanitize_key( wp_unslash( $_GET["tab"] ) );
@@ -169,8 +161,11 @@ class DT_Zume_Menu
                 case 'site_links':
                     $this->tab_site_links();
                     break;
-                case "settings":
-                    $this->tab_settings();
+                case "zume_settings":
+                    $this->tab_zume_settings();
+                    break;
+                case "dt_settings":
+                    $this->tab_dt_settings();
                     break;
                 default:
                     break;
@@ -207,7 +202,7 @@ class DT_Zume_Menu
         $this->template( 'end' );
     }
 
-    public function tab_settings() {
+    public function tab_zume_settings() {
         // begin columns template
         $this->template( 'begin' );
 
@@ -218,6 +213,19 @@ class DT_Zume_Menu
 
         $this->site_default_metabox();
         $this->system_health_metabox();
+
+        // begin right column template
+        $this->template( 'right_column' );
+        // end columns template
+        $this->template( 'end' );
+    }
+
+    public function tab_dt_settings() {
+        // begin columns template
+        $this->template( 'begin' );
+
+        // Runs validation of the database when page is loaded.
+        $this->site_default_metabox();
 
         // begin right column template
         $this->template( 'right_column' );

@@ -105,6 +105,7 @@ class DT_Zume {
 
     private function zume() {
         require_once( 'includes/site-link-system.php' ); // site linking system for Zume only, DT already has it installed in core
+        require_once( 'zume/zume-endpoints.php' );
         require_once( 'zume/zume-hooks.php' );
         require_once( 'zume/zume.php' );
         require_once( 'zume/zume-async-send.php' );
@@ -112,6 +113,9 @@ class DT_Zume {
 
     private function disciple_tools() {
         require_once( 'dt/dt-endpoints.php' );
+        require_once( 'dt/dt.php' );
+        require_once( 'dt/dt-filters-and-actions.php' );
+
     }
 
     /**
@@ -126,8 +130,6 @@ class DT_Zume {
         require_once( 'includes/utility-functions.php' );
         require_once( 'includes/tables.php' );
         require_once( 'includes/admin/wp-async-request.php' );
-
-
     }
 
     /**
