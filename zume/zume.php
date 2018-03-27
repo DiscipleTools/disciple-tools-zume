@@ -45,39 +45,6 @@ class DT_Zume_Zume
         return;
     }
 
-    public function build_user_transfer_record( $user_data ) {
-        // Build new DT record data
-        $fields = [
-        'title' => $user_data['title'],
-        "contact_email" => [
-        [ "value" => $user_data['user_email'] ],
-        ]
-        ];
-
-        if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
-            $phone = $user_data['zume_phone_number'] ?? '';
-            $fields['contact_phone'] = [
-            [ "value" => $phone ],
-            ];
-        }
-        if ( ! empty( $user_data['zume_user_address'] ) || ! empty( $user_data['zume_address_from_ip'] ) ) { // add address
-            $address = $user_data['zume_user_address'] ?: $user_data['zume_address_from_ip'];
-            $fields['contact_address'] = [
-            [ "value" => $address ]
-            ];
-        }
-        $user_data_string = ''; // add raw record into starting note
-        foreach ( $user_data as $key => $item ) {
-            if ( ! 'zume_foreign_key' === $key && ! 'zume_check_sum' === $key && ! empty( $item ) ) {
-                $user_data_string .= $item . '; ';
-            }
-        }
-        $fields['notes'] = [
-        'user_snapshot' => $user_data_string,
-        ];
-
-        return $fields;
-    }
 
     public function send_update_contact( $user_id ) {
         dt_write_log( __METHOD__ );
@@ -134,6 +101,49 @@ class DT_Zume_Zume
         return;
     }
 
+    public function build_user_transfer_record( $user_data ) {
+        // Build new DT record data
+        $fields = [
+        'title' => $user_data['title'],
+        "contact_email" => [
+        [ "value" => $user_data['user_email'] ],
+        ]
+        ];
+
+        if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
+            $phone = $user_data['zume_phone_number'] ?? '';
+            $fields['contact_phone'] = [
+            [ "value" => $phone ],
+            ];
+        }
+        if ( ! empty( $user_data['zume_user_address'] ) || ! empty( $user_data['zume_address_from_ip'] ) ) { // add address
+            $address = $user_data['zume_user_address'] ?: $user_data['zume_address_from_ip'];
+            $fields['contact_address'] = [
+            [ "value" => $address ]
+            ];
+        }
+        $user_data_string = ''; // add raw record into starting note
+        foreach ( $user_data as $key => $item ) {
+            if ( ! 'zume_foreign_key' === $key && ! 'zume_check_sum' === $key && ! empty( $item ) ) {
+                $user_data_string .= $item . '; ';
+            }
+        }
+        $fields['notes'] = [
+        'user_snapshot' => $user_data_string,
+        ];
+
+        return $fields;
+    }
+
+
+    /**
+     * Transfer user data
+     * This function puts together the complete user data package to send to Disciple Tools
+     *
+     * @param null $user_id
+     *
+     * @return array
+     */
     public function get_transfer_user_data( $user_id = null ) {
         if ( is_null( $user_id ) ) {
             $user_id = get_current_user_id();
@@ -149,6 +159,15 @@ class DT_Zume_Zume
             $full_name = null;
         }
 
+        $three_month_plan = get_user_meta( get_current_user_id(), 'three_month_plan', true );
+        if( class_exists( 'Zume_Three_Month_Plan' ) ) {
+            $three_month_plan = Zume_Three_Month_Plan::plan_items_filter( $three_month_plan );
+        }
+
+        $zume_groups = $this->get_groups_for_user( $user_meta );
+
+        $zume_colead_groups = $this->get_colead_groups_for_user( $user->data->user_email );
+
         $prepared_user_data = [
             'title' => sanitize_text_field( wp_unslash( ucwords( $full_name ?: $user_meta['nickname'] ?: $user->data->display_name ) ) ),
             'user_login' => $user->data->user_login,
@@ -161,6 +180,9 @@ class DT_Zume_Zume
             'zume_user_address' => sanitize_text_field( wp_unslash( $user_meta['zume_user_address'] ?? '' ) ),
             'zume_address_from_ip' => $user_meta['zume_address_from_ip'] ?? '',
             'zume_foreign_key' => $user_meta['zume_foreign_key'] ?? self::get_foreign_key( $user_id ),
+            'zume_three_month_plan' => $three_month_plan ?: [],
+            'zume_groups' => $zume_groups,
+            'zume_colead_groups' => $zume_colead_groups,
         ];
 
         update_user_meta( $user_id, 'zume_check_sum', md5( serialize( $prepared_user_data ) ) );
@@ -169,10 +191,56 @@ class DT_Zume_Zume
         return $prepared_user_data;
     }
 
+    public function get_groups_for_user( $user_meta ) : array {
+        $groups = [];
+        foreach ( $user_meta as $zume_key => $v ) {
+            $zume_key_beginning = substr( $zume_key, 0, 10 );
+            if ( 'zume_group' == $zume_key_beginning ) {
+                $groups[] = $zume_key;
+            }
+        }
+        return $groups;
+    }
+
+    /**
+     * @see Zume_Dashboard::get_colead_groups()
+     */
+    public function get_colead_groups_for_user( $user_email ) : array {
+        global $wpdb;
+        $groups = [];
+        $results = $wpdb->get_results($wpdb->prepare(
+        "SELECT *
+                        FROM `$wpdb->usermeta`
+                        WHERE meta_key LIKE %s
+                          AND meta_value LIKE %s",
+        $wpdb->esc_like( 'zume_group_' ).'%',
+        '%'. $wpdb->esc_like( $user_email ). '%'
+        ), ARRAY_A );
+        if ( empty( $results ) ) {
+            return $groups;
+        }
+
+        foreach ( $results as $v ){
+            $zume_key = $v['meta_key'];
+            $zume_value = maybe_unserialize( $v['meta_value'] );
+            $zume_value = Zume_Dashboard::verify_group_array_filter( $zume_value );
+
+            if ( in_array( $user_email, $zume_value['coleaders'] ) && // is added as coleader
+            in_array( $user_email, $zume_value['coleaders_accepted'] ) && // is accepted
+            ! in_array( $user_email, $zume_value['coleaders_declined'] ) ) // not declined
+            {
+                $zume_value['no_edit'] = true; // tags record as no owned
+                $prepared[$zume_key] = $zume_value;
+            }
+        }
+
+        return $groups;
+    }
+
     public static function get_foreign_key( $user_id ) {
         $key = get_user_meta( $user_id, 'zume_foreign_key', true );
         if ( empty( $key ) ) {
-            $key = DT_Site_Link_System::generate_token( 16 );
+            $key = DT_Site_Link_System::generate_token( 40 ); // forty bits equals 1.1 trillion combinations
             update_user_meta( $user_id, 'zume_foreign_key', $key );
         }
         return $key;
@@ -191,6 +259,7 @@ class DT_Zume_Zume
 
     /**
      * Goes through database and adds foreign key to any users missing
+     * Called from the Zume Settings page. Used during database installation
      */
     // @todo VIP coding standard is flagging this sql query saying "Usage of users/usermeta tables is highly discouraged in VIP context, For storing user additional user metadata, you should look at User Attributes."
     // @codingStandardsIgnoreStart
@@ -221,7 +290,7 @@ class DT_Zume_Zume
         $i = 0;
         if ( ! empty( $results ) ) {
             foreach ( $results as $user_id ) {
-                $key = DT_Site_Link_System::generate_token( 16 );
+                $key = DT_Site_Link_System::generate_token( 40 ); // forty bits equals 1.1 trillion combinations
                 update_user_meta( $user_id, 'zume_foreign_key', $key );
                 $i++;
             }
