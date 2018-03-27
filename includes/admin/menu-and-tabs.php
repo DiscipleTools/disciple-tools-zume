@@ -212,6 +212,7 @@ class DT_Zume_Menu
         $object->verify_check_sum_installed();
 
         $this->site_default_metabox();
+        $this->session_complete_transfer_metabox();
         $this->system_health_metabox();
 
         // begin right column template
@@ -352,6 +353,57 @@ class DT_Zume_Menu
         <?php
     }
 
+    public static function session_complete_transfer_metabox()
+    {
+        // Check for post
+        if ( isset( $_POST['zume_session_complete_transfer_nonce'] ) && ! empty( $_POST['zume_session_complete_transfer_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['zume_session_complete_transfer_nonce'] ) ), 'zume_session_complete_transfer_'. get_current_user_id() ) ) {
+            if ( isset( $_POST['session-level'] ) && ! empty( $_POST['session-level'] ) ) {
+                $session_level = sanitize_key( wp_unslash( $_POST['session-level'] ) );
+                update_option( 'zume_session_complete_transfer_level', $session_level );
+            }
+        }
+        $keys = [1,2,3,4,5,6,7,8,9,10];
+        $current_key = get_option( 'zume_session_complete_transfer_level' );
+
+        ?>
+        <form method="post" action="">
+            <?php wp_nonce_field( 'zume_session_complete_transfer_'. get_current_user_id(), 'zume_session_complete_transfer_nonce', false, true ) ?>
+
+            <!-- Box -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <td>
+                        <?php esc_html_e( 'Session Level for Transfer' ) ?>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <select id="session-level" name="session-level">
+                            <?php foreach ($keys as $value ) : ?>
+                                <option value="<?php echo esc_attr( $value ) ?>" <?php $current_key == $value ? print esc_attr( 'selected' ) : print '';  ?> >
+                                    <?php echo esc_html( $value )?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <button class="button" type="submit"><?php esc_html_e( 'Update' ) ?></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <!-- End Box -->
+        </form>
+        <?php
+    }
+
     public static function system_health_metabox()
     {
         $object = new DT_Zume_Zume();
@@ -392,5 +444,7 @@ class DT_Zume_Menu
         </form>
         <?php
     }
+
+
 
 }
