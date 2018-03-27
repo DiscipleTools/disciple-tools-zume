@@ -48,14 +48,13 @@ abstract class DT_Zume_Hook_Base
 class DT_Zume_Hook_Groups extends DT_Zume_Hook_Base {
 
     public function hooks_session_complete( $zume_group_key, $zume_session, $current_user_id ) {
-        dt_write_log( '@' . __METHOD__ );
         if ( get_option( 'zume_session_complete_transfer_level' ) == $zume_session ) {
-            // check if
+            dt_write_log( __METHOD__ . ': Session ' . $zume_session . ' Completed' );
         }
     }
 
     public function __construct() {
-        add_action( 'dt_zume_session_complete', [ &$this, 'hooks_session_complete' ], 10, 3 );
+        add_action( 'zume_session_complete', [ &$this, 'hooks_session_complete' ], 10, 3 );
 
         parent::__construct();
     }
@@ -88,7 +87,8 @@ class DT_Zume_Hook_Field_Updates extends DT_Zume_Hook_Base
      */
     public function hooks_update_user_meta( $meta_id, $object_id, $meta_key, $meta_value ) {
         if( substr( $meta_key, 0, 10) == 'zume_group' ) {
-            $this->send_group_update( $meta_id, $object_id, $meta_key, $meta_value );
+//            $this->send_group_update( $meta_id, $object_id, $meta_key, $meta_value );
+            dt_write_log( __METHOD__ . ': Zume Group Updated' );
             return;
         }
         return;
@@ -119,8 +119,6 @@ class DT_Zume_Hook_User extends DT_Zume_Hook_Base {
 
     public function __construct() {
         add_action( 'user_register', [ &$this, 'hooks_user_register' ], 99, 1 );
-        //        add_action( 'profile_update', [ &$this, 'hooks_profile_update' ], 10, 1 ); // @todo remove
-        //        add_action( 'wp_login', [ &$this, 'hooks_wp_login' ], 10, 2 ); // @todo remove
 
         parent::__construct();
     }

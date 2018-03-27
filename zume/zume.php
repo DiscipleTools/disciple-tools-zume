@@ -16,7 +16,7 @@ class DT_Zume_Zume
     public function send_new_contact( $user_id ) {
 
         // Get prepared data for user
-        $user_data = $this->get_transfer_user_data( $user_id );
+        $user_data = $this->get_transfer_user_array( $user_id );
 
         // Get target site for transfer
         $site_key = dt_zume_filter_for_site_key( $user_data );
@@ -27,7 +27,7 @@ class DT_Zume_Zume
         $site = dt_zume_get_site_details( $site_key );
 
         // Build new DT record data
-        $fields = $this->build_user_transfer_record( $user_data );
+        $fields = $this->build_dt_contact_record_array( $user_data );
 
         // Send remote request
         $args = [
@@ -50,7 +50,7 @@ class DT_Zume_Zume
         dt_write_log( __METHOD__ );
 
         // Get prepared data for user
-        $user_data = $this->get_transfer_user_data( $user_id );
+        $user_data = $this->get_transfer_user_array( $user_id );
 
         // Get target site for transfer
         $site_key = dt_zume_filter_for_site_key( $user_data );
@@ -101,7 +101,7 @@ class DT_Zume_Zume
         return;
     }
 
-    public function build_user_transfer_record( $user_data ) {
+    public function build_dt_contact_record_array( $user_data ) {
         // Build new DT record data
         $fields = [
         'title' => $user_data['title'],
@@ -144,7 +144,7 @@ class DT_Zume_Zume
      *
      * @return array
      */
-    public function get_transfer_user_data( $user_id = null ) {
+    public function get_transfer_user_array( $user_id = null ) {
         if ( is_null( $user_id ) ) {
             $user_id = get_current_user_id();
         }
@@ -189,6 +189,26 @@ class DT_Zume_Zume
         $prepared_user_data['zume_check_sum'] = md5( serialize( $prepared_user_data ) );
 
         return $prepared_user_data;
+    }
+
+    public function get_transfer_group_array( $zume_group_key, $owner_id = null ) {
+        dt_write_log( __METHOD__ );
+
+        if ( is_null( $owner_id ) ) {
+            global $wpdb;
+            $zume_group_meta = $wpdb->get_var( $wpdb->prepare( "
+                SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = %s
+            ",
+            $zume_group_key
+            ));
+
+            if ( ! $zume_group_meta ) {
+                return;
+            }
+
+        }
+
+
     }
 
     public function get_groups_for_user( $user_meta ) : array {
@@ -270,7 +290,7 @@ class DT_Zume_Zume
         $i = 0;
         if ( ! empty( $results ) ) {
             foreach ( $results as $user_id ) {
-                $this->get_transfer_user_data( $user_id );
+                $this->get_transfer_user_array( $user_id );
                 $i++;
             }
             dt_write_log( 'Updated: ' . $i );

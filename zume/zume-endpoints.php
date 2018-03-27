@@ -79,7 +79,7 @@ class DT_Zume_Zume_Endpoints
 
                 // prepare user data
                 $zume = new DT_Zume_Zume;
-                $user_data = $zume->get_transfer_user_data( $user_id );
+                $user_data = $zume->get_transfer_user_array( $user_id );
                 $fields = $zume->build_user_transfer_record( $user_data );
                 return [
                     'transfer_record' => $fields,
