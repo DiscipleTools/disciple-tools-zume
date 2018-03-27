@@ -24,7 +24,6 @@ class DT_Zume_Hooks
      */
     public function __construct()
     {
-        new DT_Zume_Hook_Field_Updates();
         new DT_Zume_Hook_User();
         new DT_Zume_Hook_Groups();
     }
@@ -47,78 +46,75 @@ abstract class DT_Zume_Hook_Base
  */
 class DT_Zume_Hook_Groups extends DT_Zume_Hook_Base {
 
-    public function hooks_session_complete( $zume_group_key, $zume_session, $current_user_id ) {
-        if ( get_option( 'zume_session_complete_transfer_level' ) == $zume_session ) {
+    public function hooks_session_complete( $zume_group_key, $zume_session, $owner_id, $current_user_id ) {
+        if ( $zume_session >= get_option( 'zume_session_complete_transfer_level' ) ) {
             dt_write_log( __METHOD__ . ': Session ' . $zume_session . ' Completed' );
-        }
-    }
-
-    public function __construct() {
-        add_action( 'zume_session_complete', [ &$this, 'hooks_session_complete' ], 10, 3 );
-
-        parent::__construct();
-    }
-
-}
-
-/**
- * Class Disciple_Tools_Notifications_Hook_Field_Updates
- */
-class DT_Zume_Hook_Field_Updates extends DT_Zume_Hook_Base
-{
-    /**
-     * Disciple_Tools_Notifications_Hook_Field_Updates constructor.
-     */
-    public function __construct()
-    {
-        add_action( "updated_user_meta", [ &$this, 'hooks_update_user_meta' ], 10, 4 );
-        //do_action( "updated_{$meta_type}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
-
-        parent::__construct();
-    }
-
-    /**
-     * Filter hook to see if it is a zume_group update
-     *
-     * @param $meta_id
-     * @param $object_id
-     * @param $meta_key
-     * @param $meta_value
-     */
-    public function hooks_update_user_meta( $meta_id, $object_id, $meta_key, $meta_value ) {
-        if( substr( $meta_key, 0, 10) == 'zume_group' ) {
-//            $this->send_group_update( $meta_id, $object_id, $meta_key, $meta_value );
-            dt_write_log( __METHOD__ . ': Zume Group Updated' );
-            return;
+            try {
+                $send_new_user = new DT_Zume_Session_Complete_Transfer();
+                $send_new_user->launch(
+                    [
+                    'zume_group_key'    => $zume_group_key,
+                    'owner_id'          => $owner_id,
+                    'current_user_id'   => $current_user_id,
+                    ]
+                );
+            } catch ( Exception $e ) {
+                dt_write_log( '@' . __METHOD__ );
+                dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
+            }
         }
         return;
     }
 
-    public function send_group_update( $meta_id, $object_id, $meta_key, $meta_value ) {
+    public function __construct() {
+        add_action( 'zume_session_complete', [ &$this, 'hooks_session_complete' ], 10, 4 );
 
+        parent::__construct();
     }
 }
+
 
 /**
  * Class DT_Zume_Hook_User
  */
 class DT_Zume_Hook_User extends DT_Zume_Hook_Base {
 
-    public function hooks_user_register( $user_id ) {
+    public function add_zume_foreign_key( $user_id ) { // add zume foreign key on registration
         $new_key = DT_Zume_Zume::get_foreign_key( $user_id );
-        add_user_meta( $user_id, 'zume_foreign_key', $new_key, true ); // add zume foreign key
+        add_user_meta( $user_id, 'zume_foreign_key', $new_key, true );
     }
 
-    public function hooks_profile_update( $user_id ) {
-        dt_write_log( '@' . __METHOD__ );
+    public function hooks_three_month_plan_updated( $user_id, $plan ) {
+        try {
+            $send_new_user = new DT_Zume_Three_Month_Plan_Updated();
+            $send_new_user->launch(
+                [
+                'user_id'   => $user_id,
+                ]
+            );
+        } catch ( Exception $e ) {
+            dt_write_log( '@' . __METHOD__ );
+            dt_write_log( 'Caught exception: ',  $e->getMessage(), "\n" );
+        }
+        return;
     }
 
-    public function hooks_wp_login( $user_login, $user ) {
-        dt_write_log( '@' . __METHOD__ );
+    public function check_for_zume_default_meta( $user_login, $user ) {
+
+        if ( empty( get_user_meta( $user->ID, 'zume_foreign_key' ) ) ) {
+            DT_Zume_Zume::get_foreign_key( $user->ID );
+        }
+        if ( empty( get_user_meta( $user->ID, 'zume_language' ) ) ) {
+            update_user_meta( $user->ID, 'zume_language', zume_current_language() );
+        }
+
+        return;
     }
 
     public function __construct() {
-        add_action( 'user_register', [ &$this, 'hooks_user_register' ], 99, 1 );
+        add_action( 'user_register', [ &$this, 'add_zume_foreign_key' ], 99, 1 );
+        add_action( 'zume_update_three_month_plan', [ &$this, 'hooks_three_month_plan_updated' ], 99, 2 );
+        add_action( 'wp_login', [ &$this, 'check_for_zume_default_meta' ], 10, 2 );
 
         parent::__construct();
     }

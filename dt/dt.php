@@ -6,7 +6,7 @@ class DT_Zume_DT
         // Get target site for transfer
         $site_key = get_option( 'zume_default_site' );
         if ( ! $site_key ) {
-            return new WP_Error(__METHOD__, 'No site setup' );
+            return new WP_Error( __METHOD__, 'No site setup' );
         }
         $site = dt_zume_get_site_details( $site_key );
 
@@ -21,11 +21,11 @@ class DT_Zume_DT
         $result = dt_zume_remote_send( 'get_contact_by_foreign_key', $site['url'], $args );
 
         if ( ! $result['response']['code'] == '200') {
-            return new WP_Error(__METHOD__, 'Failed response from Zume server' );
+            return new WP_Error( __METHOD__, 'Failed response from Zume server' );
         }
 
         if ( ! isset( $result['body'] ) || empty( $result['body'] ) ) {
-            return new WP_Error(__METHOD__, 'Mailformed or empty remote server response' );
+            return new WP_Error( __METHOD__, 'Mailformed or empty remote server response' );
         }
 
         $response = json_decode( $result['body'], true );

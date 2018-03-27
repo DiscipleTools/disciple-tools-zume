@@ -114,7 +114,7 @@ class DT_Zume {
     private function disciple_tools() {
         require_once( 'dt/dt-endpoints.php' );
         require_once( 'dt/dt.php' );
-        require_once( 'dt/dt-filters-and-actions.php' );
+        require_once( 'dt/dt-hooks.php' );
 
     }
 
@@ -126,10 +126,10 @@ class DT_Zume {
      * @return void
      */
     private function shared() {
-        require_once( 'includes/admin/menu-and-tabs.php' );
+        require_once( 'includes/menu-and-tabs.php' );
         require_once( 'includes/utility-functions.php' );
         require_once( 'includes/tables.php' );
-        require_once( 'includes/admin/wp-async-request.php' );
+        require_once( 'includes/wp-async-request.php' );
     }
 
     /**

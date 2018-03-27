@@ -362,7 +362,7 @@ class DT_Zume_Menu
                 update_option( 'zume_session_complete_transfer_level', $session_level );
             }
         }
-        $keys = [1,2,3,4,5,6,7,8,9,10];
+        $keys = [ 1,2,3,4,5,6,7,8,9,10 ];
         $current_key = get_option( 'zume_session_complete_transfer_level' );
 
         ?>

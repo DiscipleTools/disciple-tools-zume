@@ -44,12 +44,12 @@ class DT_Zume_Zume_Endpoints
         $namespace = 'dt-public/v' . $version;
 
         register_rest_route(
-        $namespace, '/zume/get_contact_by_foreign_key', [
+            $namespace, '/zume/get_contact_by_foreign_key', [
             [
             'methods'  => WP_REST_Server::CREATABLE,
             'callback' => [ $this, 'get_contact_by_foreign_key' ],
             ],
-        ]
+            ]
         );
 
     }
@@ -78,7 +78,7 @@ class DT_Zume_Zume_Endpoints
                 }
 
                 // prepare user data
-                $zume = new DT_Zume_Zume;
+                $zume = new DT_Zume_Zume();
                 $user_data = $zume->get_transfer_user_array( $user_id );
                 $fields = $zume->build_user_transfer_record( $user_data );
                 return [

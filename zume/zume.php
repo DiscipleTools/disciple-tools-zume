@@ -13,47 +13,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class DT_Zume_Zume
 {
 
-    public function send_new_contact( $user_id ) {
-
-        // Get prepared data for user
-        $user_data = $this->get_transfer_user_array( $user_id );
-
-        // Get target site for transfer
-        $site_key = dt_zume_filter_for_site_key( $user_data );
-        if ( ! $site_key ) {
-            return; // no sites setup
-        }
-
-        $site = dt_zume_get_site_details( $site_key );
-
-        // Build new DT record data
-        $fields = $this->build_dt_contact_record_array( $user_data );
-
-        // Send remote request
-        $args = [
-            'method' => 'POST',
-            'body' => [
-                'transfer_token' => $site['transfer_token'],
-                'transfer_record' => $fields,
-                'raw_record' => $user_data,
-            ]
-        ];
-        $result = dt_zume_remote_send( 'create_new_contact', $site['url'], $args );
-
-        dt_write_log( __METHOD__ );
-        dt_write_log( $result );
-        return;
-    }
-
-
-    public function send_update_contact( $user_id ) {
+    public function send_session_complete_transfer( $zume_group_key, $owner_id, $current_user_id ) {
         dt_write_log( __METHOD__ );
 
-        // Get prepared data for user
-        $user_data = $this->get_transfer_user_array( $user_id );
+        // Get owner prepared data
+        $owner_user_data = $this->get_transfer_user_array( $owner_id );
+
+        // Group data
+        $zume_group_meta = $this->get_transfer_group_array( $zume_group_key, $owner_id );
+
+        // Get foreign keys for coleaders
+        $coleaders = $this->get_coleader_foreign_keys( $zume_group_meta );
 
         // Get target site for transfer
-        $site_key = dt_zume_filter_for_site_key( $user_data );
+        $site_key = dt_zume_filter_for_site_key( $owner_user_data );
         if ( ! $site_key ) {
             return; // no sites setup
         }
@@ -61,79 +34,169 @@ class DT_Zume_Zume
 
         // Send remote request
         $args = [
-            'method' => 'POST',
-            'body' => [
-                'transfer_token' => $site['transfer_token'],
-                'raw_record' => $user_data,
+        'method' => 'POST',
+        'body' => [
+            'transfer_token' => $site['transfer_token'],
+            'owner_raw_record' => $owner_user_data,
+            'group_raw_record' => $zume_group_meta,
+            'coleaders' => $coleaders,
             ]
         ];
-        $result = dt_zume_remote_send( 'update_contact', $site['url'], $args );
+        $result = dt_zume_remote_send( 'session_complete_transfer', $site['url'], $args );
 
         dt_write_log( $result );
         return;
     }
 
-    public function send_contact_last_login( $user_id ) {
-        dt_write_log( __METHOD__ );
-
-        $zume_foreign_key = $this->get_foreign_key( $user_id );
-        $time = current_time('mysql');
-
-        // Get target site for transfer
-        $site_key = dt_zume_filter_for_site_key();
-        if ( ! $site_key ) {
-            return; // no sites setup
-        }
-        $site = dt_zume_get_site_details( $site_key );
-
-        // Send remote request
-        $args = [
-            'method' => 'POST',
-            'body' => [
-                'transfer_token' => $site['transfer_token'],
-                'zume_foreign_key' => $zume_foreign_key,
-                'last_login' => $time,
-            ]
-        ];
-        $result = dt_zume_remote_send( 'contact_last_login', $site['url'], $args );
-
-        dt_write_log( $result );
+    public function send_three_month_plan_transfer( $user_id ) {
+// @todo
+//        // Get prepared data for user
+//        $user_data = $this->get_transfer_user_array( $user_id );
+//
+//        // Get target site for transfer
+//        $site_key = dt_zume_filter_for_site_key( $user_data );
+//        if ( ! $site_key ) {
+//            return; // no sites setup
+//        }
+//
+//        $site = dt_zume_get_site_details( $site_key );
+//
+//        // Build new DT record data
+//        $fields = $this->build_dt_contact_record_array( $user_data );
+//
+//        // Send remote request
+//        $args = [
+//        'method' => 'POST',
+//            'body' => [
+//            'transfer_token' => $site['transfer_token'],
+//            'transfer_record' => $fields,
+//            'raw_record' => $user_data,
+//            ]
+//        ];
+//        $result = dt_zume_remote_send( 'three_month_plan_submitted', $site['url'], $args );
+//
+//        dt_write_log( __METHOD__ );
+//        dt_write_log( $result );
         return;
     }
 
-    public function build_dt_contact_record_array( $user_data ) {
-        // Build new DT record data
-        $fields = [
-        'title' => $user_data['title'],
-        "contact_email" => [
-        [ "value" => $user_data['user_email'] ],
-        ]
-        ];
+    public function get_coleader_foreign_keys( $group_meta ): array {
+        $group_meta = Zume_Dashboard::verify_group_array_filter( $group_meta );
 
-        if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
-            $phone = $user_data['zume_phone_number'] ?? '';
-            $fields['contact_phone'] = [
-            [ "value" => $phone ],
-            ];
+        if ( empty( $group_meta['coleaders'] ) ) {
+            return [];
         }
-        if ( ! empty( $user_data['zume_user_address'] ) || ! empty( $user_data['zume_address_from_ip'] ) ) { // add address
-            $address = $user_data['zume_user_address'] ?: $user_data['zume_address_from_ip'];
-            $fields['contact_address'] = [
-            [ "value" => $address ]
-            ];
+
+        if ( empty( $group_meta['coleaders_accepted'] ) ) {
+            return [];
         }
-        $user_data_string = ''; // add raw record into starting note
-        foreach ( $user_data as $key => $item ) {
-            if ( ! 'zume_foreign_key' === $key && ! 'zume_check_sum' === $key && ! empty( $item ) ) {
-                $user_data_string .= $item . '; ';
+
+        if ( ! empty( $group_meta['coleaders_declined'] ) ) {
+            foreach ( $group_meta['coleaders_declined'] as $declined_email ) {
+                $index = array_search( $group_meta['coleaders_declined'], $group_meta['coleaders_accepted'] );
+                unset( $group_meta['coleaders_accepted'][$index] );
             }
         }
-        $fields['notes'] = [
-        'user_snapshot' => $user_data_string,
-        ];
 
-        return $fields;
+        $coleaders = [];
+        foreach ( $group_meta['coleaders_accepted'] as $coleader_email ) {
+            $user = get_user_by( 'email', $coleader_email );
+            $user_data = $this->get_transfer_user_array( $user->ID );
+            $coleaders[$user_data['zume_foreign_key']] = $user_data;
+        }
+
+        return $coleaders;
     }
+
+//    public function send_new_contact( $user_id ) {
+//
+//        // Get prepared data for user
+//        $user_data = $this->get_transfer_user_array( $user_id );
+//
+//        // Get target site for transfer
+//        $site_key = dt_zume_filter_for_site_key( $user_data );
+//        if ( ! $site_key ) {
+//            return; // no sites setup
+//        }
+//
+//        $site = dt_zume_get_site_details( $site_key );
+//
+//        // Build new DT record data
+//        $fields = $this->build_dt_contact_record_array( $user_data );
+//
+//        // Send remote request
+//        $args = [
+//            'method' => 'POST',
+//            'body' => [
+//                'transfer_token' => $site['transfer_token'],
+//                'transfer_record' => $fields,
+//                'raw_record' => $user_data,
+//            ]
+//        ];
+//        $result = dt_zume_remote_send( 'create_new_contact', $site['url'], $args );
+//
+//        dt_write_log( __METHOD__ );
+//        dt_write_log( $result );
+//        return;
+//    }
+
+
+//    public function send_update_contact( $user_id ) {
+//        dt_write_log( __METHOD__ );
+//
+//        // Get prepared data for user
+//        $user_data = $this->get_transfer_user_array( $user_id );
+//
+//        // Get target site for transfer
+//        $site_key = dt_zume_filter_for_site_key( $user_data );
+//        if ( ! $site_key ) {
+//            return; // no sites setup
+//        }
+//        $site = dt_zume_get_site_details( $site_key );
+//
+//        // Send remote request
+//        $args = [
+//            'method' => 'POST',
+//            'body' => [
+//                'transfer_token' => $site['transfer_token'],
+//                'raw_record' => $user_data,
+//            ]
+//        ];
+//        $result = dt_zume_remote_send( 'update_contact', $site['url'], $args );
+//
+//        dt_write_log( $result );
+//        return;
+//    }
+
+//    public function send_contact_last_login( $user_id ) {
+//        dt_write_log( __METHOD__ );
+//
+//        $zume_foreign_key = $this->get_foreign_key( $user_id );
+//        $time = current_time('mysql');
+//
+//        // Get target site for transfer
+//        $site_key = dt_zume_filter_for_site_key();
+//        if ( ! $site_key ) {
+//            return; // no sites setup
+//        }
+//        $site = dt_zume_get_site_details( $site_key );
+//
+//        // Send remote request
+//        $args = [
+//            'method' => 'POST',
+//            'body' => [
+//                'transfer_token' => $site['transfer_token'],
+//                'zume_foreign_key' => $zume_foreign_key,
+//                'last_login' => $time,
+//            ]
+//        ];
+//        $result = dt_zume_remote_send( 'contact_last_login', $site['url'], $args );
+//
+//        dt_write_log( $result );
+//        return;
+//    }
+
+
 
 
     /**
@@ -160,7 +223,7 @@ class DT_Zume_Zume
         }
 
         $three_month_plan = get_user_meta( get_current_user_id(), 'three_month_plan', true );
-        if( class_exists( 'Zume_Three_Month_Plan' ) ) {
+        if ( class_exists( 'Zume_Three_Month_Plan' ) ) {
             $three_month_plan = Zume_Three_Month_Plan::plan_items_filter( $three_month_plan );
         }
 
@@ -175,14 +238,14 @@ class DT_Zume_Zume
             'last_name' => sanitize_text_field( wp_unslash( $user_meta['last_name'] ?? '' ) ),
             'user_registered' => $user->data->user_registered,
             'user_email' => sanitize_email( wp_unslash( $user->data->user_email ) ),
-            'zume_language' => maybe_unserialize( $user_meta['zume_language'] ?? zume_current_language() ),
+            'zume_language' => maybe_unserialize( $user_meta['zume_language'] ?? zume_current_language() ?: zume_default_language() ) ,
             'zume_phone_number' => sanitize_text_field( wp_unslash( $user_meta['zume_phone_number'] ?? '' ) ),
             'zume_user_address' => sanitize_text_field( wp_unslash( $user_meta['zume_user_address'] ?? '' ) ),
             'zume_address_from_ip' => $user_meta['zume_address_from_ip'] ?? '',
             'zume_foreign_key' => $user_meta['zume_foreign_key'] ?? self::get_foreign_key( $user_id ),
             'zume_three_month_plan' => $three_month_plan ?: [],
-            'zume_groups' => $zume_groups,
-            'zume_colead_groups' => $zume_colead_groups,
+            'zume_groups' => $zume_groups ?? [],
+            'zume_colead_groups' => $zume_colead_groups ?? [],
         ];
 
         update_user_meta( $user_id, 'zume_check_sum', md5( serialize( $prepared_user_data ) ) );
@@ -191,24 +254,25 @@ class DT_Zume_Zume
         return $prepared_user_data;
     }
 
-    public function get_transfer_group_array( $zume_group_key, $owner_id = null ) {
-        dt_write_log( __METHOD__ );
-
+    public function get_transfer_group_array( $zume_group_key, $owner_id = null ) : array {
         if ( is_null( $owner_id ) ) {
             global $wpdb;
-            $zume_group_meta = $wpdb->get_var( $wpdb->prepare( "
+            $group_meta = $wpdb->get_var( $wpdb->prepare( "
                 SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = %s
             ",
-            $zume_group_key
+                $zume_group_key
             ));
 
-            if ( ! $zume_group_meta ) {
-                return;
+            if ( ! $group_meta ) {
+                return [];
             }
-
+        } else {
+            $group_meta = get_user_meta( $owner_id, $zume_group_key, true );
         }
 
+        $group_meta['zume_check_sum'] = md5( serialize( $group_meta ) );
 
+        return $group_meta;
     }
 
     public function get_groups_for_user( $user_meta ) : array {
@@ -229,12 +293,12 @@ class DT_Zume_Zume
         global $wpdb;
         $groups = [];
         $results = $wpdb->get_results($wpdb->prepare(
-        "SELECT *
+            "SELECT *
                         FROM `$wpdb->usermeta`
                         WHERE meta_key LIKE %s
                           AND meta_value LIKE %s",
-        $wpdb->esc_like( 'zume_group_' ).'%',
-        '%'. $wpdb->esc_like( $user_email ). '%'
+            $wpdb->esc_like( 'zume_group_' ).'%',
+            '%'. $wpdb->esc_like( $user_email ). '%'
         ), ARRAY_A );
         if ( empty( $results ) ) {
             return $groups;
@@ -271,7 +335,7 @@ class DT_Zume_Zume
         $user_id = $wpdb->get_var( $wpdb->prepare( "
             SELECT user_id FROM $wpdb->usermeta WHERE meta_key = 'zume_foreign_key' AND meta_value = %s
         ",
-        $zume_foreign_key
+            $zume_foreign_key
         ) );
 
         return $user_id;
