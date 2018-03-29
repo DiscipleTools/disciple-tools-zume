@@ -65,7 +65,7 @@ function dt_zume_filter_for_site_key( $user_data = null ) {
     $key = get_option( 'zume_default_site' ); // Currently, the default site is returned as the only routing option.
     if ( ! $key ) {
 
-        $keys = DT_Site_Link_System::get_site_keys();
+        $keys = Site_Link_System::get_site_keys();
         if ( empty( $keys ) ) {
             return false;
         }
@@ -86,13 +86,13 @@ function dt_zume_filter_for_site_key( $user_data = null ) {
  * @return array
  */
 function dt_zume_get_site_details( $site_key ) {
-    $keys = DT_Site_Link_System::get_site_keys();
+    $keys = Site_Link_System::get_site_keys();
 
     $site1 = $keys[$site_key]['site1'];
     $site2 = $keys[$site_key]['site2'];
 
-    $url = DT_Site_Link_System::get_non_local_site( $site1, $site2 );
-    $transfer_token = DT_Site_Link_System::create_transfer_token_for_site( $site_key );
+    $url = Site_Link_System::get_non_local_site( $site1, $site2 );
+    $transfer_token = Site_Link_System::create_transfer_token_for_site( $site_key );
 
     return [
     'url' => $url,

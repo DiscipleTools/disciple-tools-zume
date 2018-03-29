@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function dt_zume() {
     $current_theme = get_option( 'current_theme' );
-    if ( 'Disciple Tools' == $current_theme || 'Zúme Project' == $current_theme ) {
+    if ( 'Disciple Tools' == $current_theme ) {
         return DT_Zume::get_instance();
     }
     else {
@@ -72,23 +72,7 @@ class DT_Zume {
         if ( is_null( $instance ) ) {
             $instance = new dt_zume();
             $instance->setup();
-
-            $template = get_option( 'template' );
-            switch ( $template ) {
-                case 'zume-project-multilingual':
-                    $instance->shared();
-                    $instance->zume();
-                    break;
-                case 'disciple-tools-theme':
-                    $instance->shared();
-                    $instance->disciple_tools();
-                    break;
-                default: // if no option exists, then the plugin is forced to selection screen.
-                    add_action( 'admin_notices', 'dt_zume_no_disciple_tools_theme_found' );
-                    return new WP_Error( 'current_theme_not_dt', 'Disciple Tools Theme or Zúme Theme not active.' );
-                    break;
-            }
-
+            $instance->disciple_tools();
             $instance->setup_actions();
         }
         return $instance;
@@ -103,33 +87,14 @@ class DT_Zume {
      */
     private function __construct() {}
 
-    private function zume() {
-        require_once( 'includes/site-link-system.php' ); // site linking system for Zume only, DT already has it installed in core
-        require_once( 'zume/zume-endpoints.php' );
-        require_once( 'zume/zume-hooks.php' );
-        require_once( 'zume/zume.php' );
-        require_once( 'zume/zume-async-send.php' );
-    }
 
     private function disciple_tools() {
-        require_once( 'dt/dt-endpoints.php' );
-        require_once( 'dt/dt.php' );
-        require_once( 'dt/dt-hooks.php' );
-
-    }
-
-    /**
-     * Loads files needed by the plugin.
-     *
-     * @since  0.1
-     * @access public
-     * @return void
-     */
-    private function shared() {
+        require_once( 'includes/dt-endpoints.php' );
+        require_once( 'includes/dt.php' );
+        require_once( 'includes/dt-hooks.php' );
         require_once( 'includes/menu-and-tabs.php' );
         require_once( 'includes/utility-functions.php' );
         require_once( 'includes/tables.php' );
-        require_once( 'includes/wp-async-request.php' );
     }
 
     /**
@@ -178,25 +143,6 @@ class DT_Zume {
     public static function activation() {
         $template = get_option( 'template' );
         switch ( $template ) {
-            case 'zume-project-multilingual':
-
-                // Add integration capacity to administrator based on manage_dt
-                $role = get_role( 'administrator' );
-                $role->add_cap( 'manage_dt' );
-
-                // add dt_admin role
-                if ( get_role( 'dt_admin' ) ) {
-                    remove_role( 'dt_admin' );
-                }
-                add_role(
-                    'dt_admin', __( 'DT Admin' ),
-                    [
-                    'read'                      => true, //access to admin
-                    'manage_dt'                 => true, // key capability for wp-admin dt administration
-                    ]
-                );
-                break;
-
             case 'disciple-tools-theme':
                 break;
             default: // if no option exists, then the plugin is forced to selection screen.
@@ -212,7 +158,7 @@ class DT_Zume {
      * @return void
      */
     public static function deactivation() {
-        DT_Site_Link_System::deactivate(); // Remove site link keys
+        Site_Link_System::deactivate(); // Remove site link keys
     }
 
     /**
@@ -286,7 +232,7 @@ function dt_zume_no_disciple_tools_theme_found()
 {
     ?>
     <div class="notice notice-error">
-        <p><?php esc_html_e( "'Disciple Tools - Zume' plugin requires 'Disciple Tools' or 'Zúme Project' themes to work. Please activate 'Disciple Tools' or 'Zúme Project' themes or deactivate 'Disciple Tools - Zume' plugin.", "dt_zume" ); ?></p>
+        <p><?php esc_html_e( "'Disciple Tools - Zume' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or deactivate 'Disciple Tools - Zume' plugin.", "dt_zume" ); ?></p>
     </div>
     <?php
 }

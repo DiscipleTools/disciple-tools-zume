@@ -74,7 +74,7 @@ class DT_Zume_DT_Endpoints
 
         $params = $request->get_params();
 
-        $site_key = DT_Site_Link_System::verify_transfer_token( $params['transfer_token'] );
+        $site_key = Site_Link_System::verify_transfer_token( $params['transfer_token'] );
         if ( ! is_wp_error( $site_key ) && $site_key ) {
             $added = [ 'group' => 0, 'owner' => 0, 'coleaders' => 0 ];
             $errors = [];
@@ -194,7 +194,7 @@ class DT_Zume_DT_Endpoints
         $params = $request->get_params();
         dt_write_log( $params );
 
-        $site_key = DT_Site_Link_System::verify_transfer_token( $params['transfer_token'] );
+        $site_key = Site_Link_System::verify_transfer_token( $params['transfer_token'] );
         if ( ! is_wp_error( $site_key ) && $site_key ) {
 
             if ( isset( $params['zume_foreign_key'] ) && ! empty( $params['zume_foreign_key'] ) ) {
