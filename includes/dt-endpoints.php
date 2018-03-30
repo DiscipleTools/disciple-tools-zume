@@ -147,7 +147,10 @@ class DT_Zume_DT_Endpoints
                 // check if group exists
                 $group_id = $this->get_id_from_zume_foreign_key( $zume_foreign_key );
                 if ( ! $group_id ) {
-                    $new_group_id = Disciple_Tools_Groups::create_group( [ 'title' => $params['group_raw_record']['group_name'] ], false );
+
+                    $fields = $this->build_group_record_array( $params['group_raw_record'], $owner_post_id );
+
+                    $new_group_id = Disciple_Tools_Groups::create_group( $fields, false );
 
                     if ( is_wp_error( $new_group_id ) ) {
                         $errors[] = $new_group_id;
@@ -247,7 +250,7 @@ class DT_Zume_DT_Endpoints
         }
         return $post_id;
     }
-    
+
     public function build_dt_contact_record_array( $user_data ) {
         // Build new DT record data
         $fields = [
@@ -278,6 +281,28 @@ class DT_Zume_DT_Endpoints
         $fields['notes'] = [
         'user_snapshot' => $user_data_string,
         ];
+
+        return $fields;
+    }
+
+    public function build_group_record_array( $raw_record, $owner_post_id ) {
+
+        $fields = [
+            "title" => $raw_record['group_name'],
+            "group_type" => "group",
+            "group_status" => "active",
+            "created_from_contact_id" => $owner_post_id,
+        ];
+
+        if ( ! empty( $raw_record['adddress'] ) ) {
+            $fields["contact_address"] = [
+                [ "value" => $raw_record['adddress'] ]
+            ];
+        }
+
+        if ( ! empty( $raw_record['created_date'] ) ){
+            $fields["start_date"] = substr( $raw_record['created_date'], 0, 10 );
+        }
 
         return $fields;
     }
