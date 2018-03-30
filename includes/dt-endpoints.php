@@ -142,10 +142,10 @@ class DT_Zume_DT_Endpoints
                 dt_write_log( $params['group_raw_record']['key'] );
                 dt_write_log( $params['group_raw_record'] );
 
-                $zume_group_key = sanitize_key( wp_unslash( $params['group_raw_record']['key'] ) );
+                $zume_foreign_key = sanitize_key( wp_unslash( $params['group_raw_record']['foreign_key'] ) );
 
                 // check if group exists
-                $group_id = $this->get_id_from_group_key( $zume_group_key );
+                $group_id = $this->get_id_from_zume_foreign_key( $zume_foreign_key );
                 if ( ! $group_id ) {
                     $new_group_id = Disciple_Tools_Groups::create_group( [ 'title' => $params['group_raw_record']['group_name'] ], false );
 
@@ -247,21 +247,7 @@ class DT_Zume_DT_Endpoints
         }
         return $post_id;
     }
-
-    public function get_id_from_group_key( $zume_group_key ) {
-        global $wpdb;
-        $post_id = $wpdb->get_var( $wpdb->prepare("
-                    SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'zume_group_key' AND meta_value = %s
-                ",
-            $zume_group_key
-        ) );
-
-        if ( ! $post_id ) {
-            return false;
-        }
-        return $post_id;
-    }
-
+    
     public function build_dt_contact_record_array( $user_data ) {
         // Build new DT record data
         $fields = [
