@@ -26,6 +26,7 @@ class DT_Zume_DT_Hooks
     {
         new DT_Zume_DT_Hook_User();
         new DT_Zume_DT_Hook_Groups();
+        new DT_Zume_DT_Hook_Metrics();
     }
 }
 DT_Zume_DT_Hooks::instance();
@@ -370,6 +371,65 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
         parent::__construct();
     }
 
+}
+
+class DT_Zume_DT_Hook_Metrics extends DT_Zume_DT_Hook_Base
+{
+    /**
+     * This filter adds a menu item to the metrics
+     *
+     * @param $content
+     *
+     * @return string
+     */
+    public function metrics_menu( $content ) {
+        $content .= '<li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Zúme Project', 'dt_zume' ) . '</a>
+                        <ul class="menu vertical nested">
+                          <li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
+                          <li><a href="'. site_url( '/metrics/' ) .'#zume_pipeline" onclick="show_zume_pipeline()">' .  esc_html__( 'Pipeline', 'dt_zume' ) . '</a></li>
+                          <li><a href="'. site_url( '/metrics/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
+                          <li><a href="'. site_url( '/metrics/' ) .'#zume_languages" onclick="show_zume_languages()">' .  esc_html__( 'Languages', 'dt_zume' ) . '</a></li>
+                        </ul>
+                      </li>';
+        return $content;
+    }
+
+    /**
+     * Load scripts for the plugin
+     */
+    public function scripts() {
+        $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
+
+        if ( 'metrics' === $url_path ) {
+            wp_enqueue_script( 'dt_zume_script', DT_Zume::get_instance()->includes_uri . 'dt-zume-metrics.js', [
+                'jquery',
+                'jquery-ui-core',
+            ], filemtime( DT_Zume::get_instance()->includes_path . 'dt-zume-metrics.js' ), true );
+
+            wp_localize_script(
+            'dt_zume_script', 'wpApiZumeMetrics', [
+                'root' => esc_url_raw( rest_url() ),
+                'plugin_uri' => DT_Zume::get_instance()->dir_uri,
+                'nonce' => wp_create_nonce( 'wp_rest' ),
+                'current_user_login' => wp_get_current_user()->user_login,
+                'current_user_id' => get_current_user_id(),
+                'translations' => [
+                    "zume_project" => __( "Zúme Overview", "dt_zume" ),
+                    "zume_pipeline" => __( "Zúme Pipeline", "dt_zume" ),
+                    "zume_locations" => __( "Zúme Locations", "dt_zume" ),
+                    "zume_languages" => __( "Zúme Languages", "dt_zume" ),
+                    ]
+                ]
+            );
+        }
+    }
+
+    public function __construct() {
+        add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 10 );
+        add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 999 );
+
+        parent::__construct();
+    }
 }
 
 

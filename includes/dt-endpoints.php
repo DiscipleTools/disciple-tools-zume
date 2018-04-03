@@ -41,10 +41,11 @@ class DT_Zume_DT_Endpoints
     public function add_api_routes()
     {
         $version = '1';
-        $namespace = 'dt-public/v' . $version;
+        $public_namespace = 'dt-public/v' . $version;
+        $private_namespace = 'dt/v' . $version;
 
         register_rest_route(
-            $namespace, '/zume/session_complete_transfer', [
+            $public_namespace, '/zume/session_complete_transfer', [
                 [
                 'methods'  => WP_REST_Server::CREATABLE,
                 'callback' => [ $this, 'session_complete_transfer' ],
@@ -53,10 +54,20 @@ class DT_Zume_DT_Endpoints
         );
 
         register_rest_route(
-            $namespace, '/zume/three_month_plan_submitted', [
+            $public_namespace, '/zume/three_month_plan_submitted', [
             [
             'methods'  => WP_REST_Server::CREATABLE,
             'callback' => [ $this, 'three_month_plan_submitted' ],
+            ],
+            ]
+        );
+
+
+        register_rest_route(
+            $private_namespace, '/zume/zume_pipeline', [
+            [
+            'methods'  => WP_REST_Server::READABLE,
+            'callback' => [ $this, 'zume_pipeline' ],
             ],
             ]
         );
@@ -305,6 +316,27 @@ class DT_Zume_DT_Endpoints
         }
 
         return $fields;
+    }
+
+    /**
+     * Get tract from submitted address
+     *
+     * @access public
+     * @since  0.1.0
+     * @return string|WP_Error|array The contact on success
+     */
+    public function zume_pipeline()
+    {
+        $result = DT_Zume_DT::zume_pipeline_data( true );
+        if ( is_wp_error( $result ) ) {
+            return $result;
+        }
+        elseif ( $result["status"] ) {
+            return $result['data'];
+        }
+        else {
+            return new WP_Error( "zume_pipeline_processing_error", $result["message"], [ 'status' => 400 ] );
+        }
     }
 
 }

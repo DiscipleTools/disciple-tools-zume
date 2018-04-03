@@ -115,6 +115,7 @@ class DT_Zume {
 
         // Plugin directory URIs.
         $this->img_uri      = trailingslashit( $this->dir_uri . 'img' );
+        $this->includes_uri      = trailingslashit( $this->dir_uri . 'includes' );
 
         // Admin and settings variables
         $this->token             = 'dt_zume';
