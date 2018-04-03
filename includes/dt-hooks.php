@@ -51,40 +51,111 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
             global $post;
             DT_Zume_DT::check_for_update( $post->ID, 'contact' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
+            $plan_key = md5( maybe_serialize( $record['zume_three_month_plan'] ) );
             ?>
-            <label class="section-header"><?php esc_html_e( 'Zúme Group Info' ) ?></label>
+            <label class="section-header"><?php esc_html_e( 'Zúme Info' ) ?></label>
+
+            <style>
+                #zume-tabs li a { padding: 1rem 1rem; }
+            </style>
 
             <ul class="tabs" data-tabs id="zume-tabs">
-                <li class="tabs-title is-active"><a href="#sessions" aria-selected="true"><?php esc_html_e( 'Sessions' ) ?></a></li>
+                <li class="tabs-title is-active"><a href="#info" aria-selected="true"><?php esc_html_e( 'Info' ) ?></a></li>
                 <li class="tabs-title"><a href="#map" data-tabs-target="map"><?php esc_html_e( 'Map' ) ?></a></li>
+                <?php if ( user_can( get_current_user_id(), 'manage_dt' ) ) : ?>
                 <li class="tabs-title"><a data-tabs-target="raw" href="#raw"><?php esc_html_e( 'Raw' ) ?></a></li>
+                <?php endif; ?>
             </ul>
 
             <div class="tabs-content" data-tabs-content="zume-tabs">
                 <!-- Sessions Tab -->
-                <div class="tabs-panel is-active" id="sessions">
+                <div class="tabs-panel is-active" id="info" style="min-height: 375px;">
+                    <dl>
+
+                        <dt>
+                            <?php esc_html_e( 'Three Month Plan' ) ?>:
+                        </dt>
+                    <dd>
+                        <a data-open="<?php echo esc_attr( $plan_key ) ?>"><?php esc_html_e( 'View Three Month Plan' ) ?></a>
+                    </dd>
+
+                    <?php if ( isset( $record['user_registered'] ) && ! empty( $record['user_registered'] ) ) :
+                        $mdy = DateTime::createFromFormat( 'Y-m-d H:i:s', $record['user_registered'] )->format( 'm/d/Y' );
+                        ?>
+                            <dt>
+                                <?php esc_html_e( 'Started Zúme' ) ?>:
+                            </dt>
+                            <dd>
+                                <?php echo esc_attr( $mdy ) ?>
+                            </dd>
+                    <?php endif; ?>
+
+                    <?php if ( isset( $record['zume_groups'] ) && ! empty( $record['zume_groups'] ) ) : ?>
+                        <dt>
+                            <?php esc_html_e( 'Number of Groups Started' ) ?>:
+                        </dt>
+                        <dd>
+                            <?php echo $record['zume_groups'] ? count( maybe_unserialize( $record['zume_groups'] ) ) : 0; ?>
+                        </dd>
+                    <?php endif; ?>
+
+                    <?php if ( isset( $record['zume_language'] ) && ! empty( $record['zume_language'] ) ) : ?>
+                        <dt>
+                            <?php esc_html_e( 'Language' ) ?>:
+                        </dt>
+                        <dd>
+                            <?php echo  $record['zume_language'] ? esc_html( strtoupper( $record['zume_language'] ) ) : esc_html__( 'Unknown' ); ?>
+                        </dd>
+                    <?php endif; ?>
+
+                    </dl>
+
+                    <div class="reveal small" id="<?php echo esc_attr( $plan_key ) ?>" data-reveal>
+                        <h3><?php esc_html_e( 'Three Month Plan' ) ?></h3><hr>
+                        <dl>
+                            <?php
+                            foreach ( $record['zume_three_month_plan'] as $key => $value ) {
+                                echo '<dt>'. esc_html( ucwords( str_replace( '_', ' ', $key ) ) ) .'</dt>';
+                                echo '<dd>'. esc_html( $value ?: __( 'Not answered' ) ) .'</dd>';
+                            }
+                            ?>
+                        </dl>
+
+                        <button class="close-button" data-close aria-label="Close modal" type="button">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
 
                 </div>
 
                 <!-- Map Tab-->
                 <div class="tabs-panel" id="map">
                     <?php
+                    $lng = $record['zume_user_lng'] ?: $record['zume_lng_from_ip'];
+                    $lat = $record['zume_user_lat'] ?: $record['zume_lat_from_ip'];
                     $address = $record['zume_user_address'] ?: $record['zume_address_from_ip'];
-                    $source = $record['zume_user_address'] ? 'User Provided Address' : 'Location from IP Address';
-                    ?>
-                    <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
-<!--                    <a id="map-reveal" data-open="--><?php //echo md5( $address ?? 'none' ) ?><!--"><img src="https://maps.googleapis.com/maps/api/staticmap?center=--><?php //echo esc_attr( $lat ) . ',' . esc_attr( $lng  ) ?><!--&zoom=6&size=640x640&scale=1&markers=color:red|--><?php //echo esc_attr( $lat  ) . ',' . esc_attr( $lng ) ?><!--&key=--><?php //echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?><!--"/></a>-->
-                    <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
+                    $source = $record['zume_user_address'] ? 'from user' : 'from ip address';
 
-                    <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
-<!--                        <img  src="https://maps.googleapis.com/maps/api/staticmap?center=--><?php //echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?><!--&zoom=5&size=640x640&scale=2&markers=color:red|--><?php //echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?><!--&key=--><?php //echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?><!--"/>-->
-                        <button class="close-button" data-close aria-label="Close modal" type="button">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
+                    if ( empty( $lng ) || empty( $lat ) ) : ?>
+                        <p><?php esc_html_e( 'No map info gathered.' ) ?></p>
+                    <?php else : ?>
+
+                        <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
+                        <a id="map-reveal" data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/></a>
+                        <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
+
+                        <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
+                            <img  src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x550&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/>
+                            <button class="close-button" data-close aria-label="Close modal" type="button">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                    <?php endif; ?>
                 </div>
 
                 <!-- Raw Tab-->
+                <?php if ( user_can( get_current_user_id(), 'manage_dt' ) ) : ?>
                 <div class="tabs-panel" id="raw" style="width: 100%;height: 300px;overflow-y: scroll;overflow-x:hidden;">
                     <?php
                     if ( $record ) {
@@ -94,16 +165,9 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
                     }
                     ?>
                 </div>
+                <?php endif; ?>
             </div>
 
-
-            <script>
-                jQuery(document).ready(function(){
-                    jQuery.ajax(window.location, function(data) {
-                        jQuery('#map-reveal').html(data).foundation();
-                    });
-                })
-            </script>
         <?php
         endif;
 
@@ -136,12 +200,19 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
             DT_Zume_DT::check_for_update( $post->ID, 'group' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
             ?>
-            <label class="section-header"><?php esc_html_e( 'Zúme Group Info' ) ?></label>
+            <label class="section-header"><?php esc_html_e( 'Zúme Info' ) ?></label>
+
+            <style>
+                #zume-tabs li a { padding: 1rem 1rem; }
+            </style>
 
             <ul class="tabs" data-tabs id="zume-tabs">
                 <li class="tabs-title is-active"><a href="#sessions" aria-selected="true"><?php esc_html_e( 'Sessions' ) ?></a></li>
+                <li class="tabs-title"><a href="#info" data-tabs-target="info"><?php esc_html_e( 'Info' ) ?></a></li>
                 <li class="tabs-title"><a href="#map" data-tabs-target="map"><?php esc_html_e( 'Map' ) ?></a></li>
+                <?php if ( user_can( get_current_user_id(), 'manage_dt' ) ) : ?>
                 <li class="tabs-title"><a data-tabs-target="raw" href="#raw"><?php esc_html_e( 'Raw' ) ?></a></li>
+                <?php endif; ?>
             </ul>
 
             <div class="tabs-content" data-tabs-content="zume-tabs">
@@ -165,20 +236,93 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
                     <?php } // endif ?>
                 </div>
 
+                <!-- Info box -->
+                <div class="tabs-panel" id="info" style="min-height: 375px;">
+
+                    <dl>
+
+                        <?php if ( isset( $record['members'] ) && ! empty( $record['members'] ) ) :
+                            ?>
+                            <dt>
+                                <?php esc_html_e( 'Members' ) ?>:
+                            </dt>
+                            <dd>
+                                <?php echo esc_attr( $record['members'] ) ?>
+                            </dd>
+                        <?php endif; ?>
+
+                        <?php if ( isset( $record['coleaders_accepted'] ) && ! empty( $record['coleaders_accepted'] ) ) :
+                            ?>
+                            <dt>
+                                <?php esc_html_e( 'Coleaders' ) ?>:
+                            </dt>
+                            <dd>
+                                <?php echo esc_attr( $record['coleaders_accepted'] ) ?>
+                            </dd>
+                        <?php endif; ?>
+
+                        <?php if ( isset( $record['meeting_time'] ) && ! empty( $record['meeting_time'] ) ) :
+                            ?>
+                            <dt>
+                                <?php esc_html_e( 'Meeting Time' ) ?>:
+                            </dt>
+                            <dd>
+                                <?php echo esc_attr( $record['meeting_time'] ) ?>
+                            </dd>
+                        <?php endif; ?>
+
+                        <?php if ( isset( $record['created_date'] ) && ! empty( $record['created_date'] ) ) :
+                            $mdy = DateTime::createFromFormat( 'Y-m-d H:i:s', $record['created_date'] )->format( 'm/d/Y' );
+                            ?>
+                            <dt>
+                                <?php esc_html_e( 'Group Start Date' ) ?>:
+                            </dt>
+                            <dd>
+                                <?php echo esc_attr( $mdy ) ?>
+                            </dd>
+                        <?php endif; ?>
+
+                        <?php if ( isset( $record['last_modified_date'] ) && ! empty( $record['last_modified_date'] ) ) :
+                            $mdy = DateTime::createFromFormat( 'Y-m-d H:i:s', $record['last_modified_date'] )->format( 'm/d/Y' );
+                            ?>
+                            <dt>
+                                <?php esc_html_e( 'Last Active' ) ?>:
+                            </dt>
+                            <dd>
+                                <?php echo esc_attr( $mdy ) ?>
+                            </dd>
+                        <?php endif; ?>
+
+                        <?php if ( isset( $record['closed'] ) ) :
+                            ?>
+                            <dt>
+                                <?php esc_html_e( 'Status' ) ?>:
+                            </dt>
+                            <dd>
+                                <?php echo esc_attr( $record['closed'] ? __( 'Open' ) : __( 'Closed' ) ) ?>
+                            </dd>
+                        <?php endif; ?>
+
+
+
+                    </dl>
+
+                </div>
+
                 <!-- Map Tab-->
                 <div class="tabs-panel" id="map">
                     <?php
                     $lng = $record['lng'] ?: $record['ip_lng'];
                     $lat = $record['lat'] ?: $record['ip_lat'];
                     $address = $record['address'] ?: $record['ip_address'];
-                    $source = $record['address'] ? 'User Provided Address' : 'Location from IP Address';
+                    $source = $record['address'] ? 'from user' : 'from ip address';
                     ?>
                     <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
                     <a id="map-reveal" data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/></a>
                     <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
 
                     <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
-                        <img  src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x640&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/>
+                        <img  src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x550&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/>
                         <button class="close-button" data-close aria-label="Close modal" type="button">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -186,6 +330,7 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
                 </div>
 
                 <!-- Raw Tab-->
+                <?php if ( user_can( get_current_user_id(), 'manage_dt' ) ) : ?>
                 <div class="tabs-panel" id="raw" style="width: 100%;height: 300px;overflow-y: scroll;overflow-x:hidden;">
                     <?php
                     if ( $record ) {
@@ -195,6 +340,7 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
                     }
                     ?>
                 </div>
+                <?php endif; ?>
             </div>
 
 
