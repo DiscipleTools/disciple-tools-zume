@@ -49,18 +49,10 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
     public function user_detail_box( $section ) {
         if ( $section == 'zume_contact_details') :
             global $post;
-            // trigger refreshed collection of data
-            DT_Zume_DT::check_user_record_update( $post->ID );
-
-            // check last_cache date
-
-            // remote_get check sum
-
-            // transfer and save new cache version
-
+            DT_Zume_DT::check_for_update( $post->ID, 'contact' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
             ?>
-            <label class="section-header"><?php esc_html_e('Zúme Group Info' ) ?></label>
+            <label class="section-header"><?php esc_html_e( 'Zúme Group Info' ) ?></label>
 
             <ul class="tabs" data-tabs id="zume-tabs">
                 <li class="tabs-title is-active"><a href="#sessions" aria-selected="true"><?php esc_html_e( 'Sessions' ) ?></a></li>
@@ -77,16 +69,14 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
                 <!-- Map Tab-->
                 <div class="tabs-panel" id="map">
                     <?php
-//                    $lng = $record['lng'] ?: ( $record['ip_lng'] ?: '');
-//                    $lat = $record['lat'] ?: ( $record['ip_lat'] ?: '');
                     $address = $record['zume_user_address'] ?: $record['zume_address_from_ip'];
                     $source = $record['zume_user_address'] ? 'User Provided Address' : 'Location from IP Address';
                     ?>
                     <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
 <!--                    <a id="map-reveal" data-open="--><?php //echo md5( $address ?? 'none' ) ?><!--"><img src="https://maps.googleapis.com/maps/api/staticmap?center=--><?php //echo esc_attr( $lat ) . ',' . esc_attr( $lng  ) ?><!--&zoom=6&size=640x640&scale=1&markers=color:red|--><?php //echo esc_attr( $lat  ) . ',' . esc_attr( $lng ) ?><!--&key=--><?php //echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?><!--"/></a>-->
-                    <p class="center"><a data-open="<?php echo md5( $address ?? 'none' ) ?>"><?php esc_html_e('click to show large map') ?></a></p>
+                    <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
 
-                    <div class="reveal large" id="<?php echo md5( $address ?? 'none' ) ?>" data-reveal>
+                    <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
 <!--                        <img  src="https://maps.googleapis.com/maps/api/staticmap?center=--><?php //echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?><!--&zoom=5&size=640x640&scale=2&markers=color:red|--><?php //echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?><!--&key=--><?php //echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?><!--"/>-->
                         <button class="close-button" data-close aria-label="Close modal" type="button">
                             <span aria-hidden="true">&times;</span>
@@ -99,7 +89,7 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
                     <?php
                     if ( $record ) {
                         foreach ( $record as $key => $value ) {
-                            echo '<strong>' . $key . ': </strong>' . maybe_serialize( $value ) . '<br>';
+                            echo '<strong>' . esc_attr( $key ) . ': </strong>' . esc_attr( maybe_serialize( $value ) ) . '<br>';
                         }
                     }
                     ?>
@@ -127,8 +117,8 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
     }
 
     public function __construct() {
-        add_action('dt_details_additional_section', [$this, 'user_detail_box'] );
-        add_filter( 'dt_details_additional_section_ids', [$this, 'user_filter_box'], 999, 2 );
+        add_action( 'dt_details_additional_section', [ $this, 'user_detail_box' ] );
+        add_filter( 'dt_details_additional_section_ids', [ $this, 'user_filter_box' ], 999, 2 );
 
         parent::__construct();
     }
@@ -142,18 +132,11 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
 
     public function group_detail_box( $section ) {
         if ( $section == 'zume_group_details') :
-            // trigger refreshed collection of data
-
-            // check last_cache date
-
-            // remote_get check sum
-
-            // transfer and save new cache version
-
             global $post;
+            DT_Zume_DT::check_for_update( $post->ID, 'group' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
             ?>
-            <label class="section-header"><?php esc_html_e('Zúme Group Info' ) ?></label>
+            <label class="section-header"><?php esc_html_e( 'Zúme Group Info' ) ?></label>
 
             <ul class="tabs" data-tabs id="zume-tabs">
                 <li class="tabs-title is-active"><a href="#sessions" aria-selected="true"><?php esc_html_e( 'Sessions' ) ?></a></li>
@@ -168,16 +151,16 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
                     if ( $record ) { ?>
 
                         <!-- sessions -->
-                        <button class="button <?php echo esc_html( $record['session_1'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 1' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_2'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 2' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_3'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 3' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_4'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 4' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_5'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 5' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_6'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 6' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_7'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 7' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_8'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 8' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_9'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 9' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_10'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html('Session 10' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_1'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 1' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_2'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 2' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_3'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 3' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_4'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 4' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_5'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 5' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_6'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 6' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_7'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 7' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_8'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 8' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_9'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 9' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_10'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 10' ) ?></button>
 
                     <?php } // endif ?>
                 </div>
@@ -191,10 +174,10 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
                     $source = $record['address'] ? 'User Provided Address' : 'Location from IP Address';
                     ?>
                     <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
-                    <a id="map-reveal" data-open="<?php echo md5( $address ?? 'none' ) ?>"><img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng  ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat  ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/></a>
-                    <p class="center"><a data-open="<?php echo md5( $address ?? 'none' ) ?>"><?php esc_html_e('click to show large map') ?></a></p>
+                    <a id="map-reveal" data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/></a>
+                    <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
 
-                    <div class="reveal large" id="<?php echo md5( $address ?? 'none' ) ?>" data-reveal>
+                    <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
                         <img  src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x640&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::$key ); ?>"/>
                         <button class="close-button" data-close aria-label="Close modal" type="button">
                             <span aria-hidden="true">&times;</span>
@@ -207,7 +190,7 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
                     <?php
                     if ( $record ) {
                         foreach ( $record as $key => $value ) {
-                            echo '<strong>' . $key . ': </strong>' . maybe_serialize( $value ) . '<br>';
+                            echo '<strong>' . esc_attr( $key ) . ': </strong>' . esc_attr( maybe_serialize( $value ) ) . '<br>';
                         }
                     }
                     ?>
@@ -235,8 +218,8 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
     }
 
     public function __construct() {
-        add_action('dt_details_additional_section', [$this, 'group_detail_box'] );
-        add_filter( 'dt_details_additional_section_ids', [$this, 'groups_filter_box'], 999, 2 );
+        add_action( 'dt_details_additional_section', [ $this, 'group_detail_box' ] );
+        add_filter( 'dt_details_additional_section_ids', [ $this, 'groups_filter_box' ], 999, 2 );
 
         parent::__construct();
     }
