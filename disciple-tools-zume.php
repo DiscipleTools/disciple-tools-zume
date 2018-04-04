@@ -89,12 +89,13 @@ class DT_Zume {
 
 
     private function disciple_tools() {
-        require_once( 'includes/dt-endpoints.php' );
-        require_once( 'includes/dt.php' );
-        require_once( 'includes/dt-hooks.php' );
+        require_once( 'includes/core.php' );
+        require_once( 'includes/endpoints.php' );
+        require_once( 'includes/hooks.php' );
+        require_once( 'includes/metrics.php' );
         require_once( 'includes/menu-and-tabs.php' );
-        require_once( 'includes/utility-functions.php' );
         require_once( 'includes/tables.php' );
+
     }
 
     /**

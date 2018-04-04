@@ -1,8 +1,8 @@
 <?php
 /**
- * DT_Zume_DT_Endpoints
+ * DT_Zume_Core_Endpoints
  *
- * @class      DT_Zume_DT_Endpoints
+ * @class      DT_Zume_Core_Endpoints
  * @since      0.1.0
  * @package    DT_Webform
  */
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class DT_Webform_Home_Endpoints
  */
-class DT_Zume_DT_Endpoints
+class DT_Zume_Core_Endpoints
 {
     private static $_instance = null;
 
@@ -62,24 +62,19 @@ class DT_Zume_DT_Endpoints
             ]
         );
 
-
+        /**
+         * Charts and Reports
+         */
         register_rest_route(
             $private_namespace, '/zume/zume_pipeline', [
-            [
-            'methods'  => WP_REST_Server::READABLE,
-            'callback' => [ $this, 'zume_pipeline' ],
-            ],
+                [
+                'methods'  => WP_REST_Server::READABLE,
+                'callback' => [ $this, 'chart_zume_pipeline' ],
+                ],
             ]
         );
     }
 
-
-    /**
-     * Respond to transfer request of files
-     *
-     * @param \WP_REST_Request $request
-     * @return array|\WP_Error
-     */
     public function session_complete_transfer( WP_REST_Request $request ) {
         dt_write_log( __METHOD__ );
 
@@ -195,12 +190,6 @@ class DT_Zume_DT_Endpoints
         }
     }
 
-    /**
-     * Respond to transfer request of files
-     *
-     * @param \WP_REST_Request $request
-     * @return bool|\WP_Error
-     */
     public function three_month_plan_submitted( WP_REST_Request $request ) {
 
         dt_write_log( __METHOD__ );
@@ -318,16 +307,13 @@ class DT_Zume_DT_Endpoints
         return $fields;
     }
 
-    /**
-     * Get tract from submitted address
-     *
-     * @access public
-     * @since  0.1.0
-     * @return string|WP_Error|array The contact on success
-     */
-    public function zume_pipeline()
+    public function chart_zume_pipeline()
     {
-        $result = DT_Zume_DT::zume_pipeline_data( true );
+        if ( !self::can_view( 'zume_pipeline', get_current_user() ) ) {
+            return new WP_Error( __FUNCTION__, __( "No permissions to read report" ), [ 'status' => 403 ] );
+        }
+
+        $result = DT_Zume_Metrics::zume_pipeline_data();
         if ( is_wp_error( $result ) ) {
             return $result;
         }
@@ -335,9 +321,31 @@ class DT_Zume_DT_Endpoints
             return $result['data'];
         }
         else {
-            return new WP_Error( "zume_pipeline_processing_error", $result["message"], [ 'status' => 400 ] );
+            return new WP_Error( __METHOD__, $result["message"], [ 'status' => 400 ] );
+        }
+    }
+
+    public static function can_view( $report_name, $user_id )
+    {
+        // TODO decide on permission strategy for reporting
+        // Do we hardwire permissions to reports to the roles of a person?
+        // Do we set up a permission assignment tool in the config area, so that a group could assign reports to a role
+        if ( empty( $user_id ) ) {
+            $user_id = get_current_user_id();
+        }
+        if ( ! $user_id ) {
+            return false;
+        }
+
+        switch ( $report_name ) {
+            case 'zume_pipeline':
+                return true;
+                break;
+            default:
+                return true; // TODO temporary true response returned until better permissions check is created
+                break;
         }
     }
 
 }
-DT_Zume_DT_Endpoints::instance();
+DT_Zume_Core_Endpoints::instance();

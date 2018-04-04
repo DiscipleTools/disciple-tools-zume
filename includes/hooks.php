@@ -6,7 +6,7 @@ if ( !defined( 'ABSPATH' ) ) {
 /**
  * Class DT_Zume_Hooks
  */
-class DT_Zume_DT_Hooks
+class DT_Zume_Hooks
 {
 
     private static $_instance = null;
@@ -24,18 +24,18 @@ class DT_Zume_DT_Hooks
      */
     public function __construct()
     {
-        new DT_Zume_DT_Hook_User();
-        new DT_Zume_DT_Hook_Groups();
-        new DT_Zume_DT_Hook_Metrics();
+        new DT_Zume_Hooks_User();
+        new DT_Zume_Hooks_Groups();
+        new DT_Zume_Hooks_Metrics();
     }
 }
-DT_Zume_DT_Hooks::instance();
+DT_Zume_Hooks::instance();
 
 /**
  * Empty class for now..
  * Class DT_Zume_Hook_Base
  */
-abstract class DT_Zume_DT_Hook_Base
+abstract class DT_Zume_Hooks_Base
 {
     public function __construct()
     {
@@ -45,12 +45,12 @@ abstract class DT_Zume_DT_Hook_Base
 /**
  * Class DT_Zume_Hook_User
  */
-class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
+class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
 
     public function user_detail_box( $section ) {
-        if ( $section == 'zume_contact_details') :
+        if ( $section == 'zume_contact_details' ) :
             global $post;
-            DT_Zume_DT::check_for_update( $post->ID, 'contact' );
+            DT_Zume_Core::check_for_update( $post->ID, 'contact' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
             $plan_key = md5( maybe_serialize( $record['zume_three_month_plan'] ) );
             ?>
@@ -176,7 +176,10 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
 
     public function user_filter_box( $sections, $post_type = '' ) {
         if ($post_type === "contacts") {
-            $sections[] = 'zume_contact_details';
+            global $post;
+            if ( get_post_meta( $post->ID, 'zume_raw_record', true ) ) {
+                $sections[] = 'zume_contact_details';
+            }
         }
         return $sections;
     }
@@ -191,14 +194,14 @@ class DT_Zume_DT_Hook_User extends DT_Zume_DT_Hook_Base {
 }
 
 /**
- * Class DT_Zume_Hook_Groups
+ * Class DT_Zume_Hooks_Groups
  */
-class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
+class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
 
     public function group_detail_box( $section ) {
-        if ( $section == 'zume_group_details') :
-            global $post;
-            DT_Zume_DT::check_for_update( $post->ID, 'group' );
+        global $post;
+        if ( $section == 'zume_group_details' && get_post_meta( $post->ID, 'zume_raw_record', true ) ) :
+            DT_Zume_Core::check_for_update( $post->ID, 'group' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
             ?>
             <label class="section-header"><?php esc_html_e( 'Zúme Info' ) ?></label>
@@ -258,7 +261,7 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
                                 <?php esc_html_e( 'Coleaders' ) ?>:
                             </dt>
                             <dd>
-                                <?php echo esc_attr( $record['coleaders_accepted'] ) ?>
+                                <?php echo esc_attr( is_array( $record['coleaders_accepted'] ) ? count( $record['coleaders_accepted'] ) : '' ) ?>
                             </dd>
                         <?php endif; ?>
 
@@ -359,7 +362,10 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
 
     public function groups_filter_box( $sections, $post_type = '' ) {
         if ($post_type === "groups") {
-            $sections[] = 'zume_group_details';
+            global $post;
+            if ( get_post_meta( $post->ID, 'zume_raw_record', true ) ) {
+                $sections[] = 'zume_group_details';
+            }
         }
         return $sections;
     }
@@ -370,10 +376,9 @@ class DT_Zume_DT_Hook_Groups extends DT_Zume_DT_Hook_Base {
 
         parent::__construct();
     }
-
 }
 
-class DT_Zume_DT_Hook_Metrics extends DT_Zume_DT_Hook_Base
+class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
 {
     /**
      * This filter adds a menu item to the metrics
@@ -384,7 +389,7 @@ class DT_Zume_DT_Hook_Metrics extends DT_Zume_DT_Hook_Base
      */
     public function metrics_menu( $content ) {
         $content .= '<li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Zúme Project', 'dt_zume' ) . '</a>
-                        <ul class="menu vertical nested">
+                        <ul class="menu vertical nested is-active">
                           <li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
                           <li><a href="'. site_url( '/metrics/' ) .'#zume_pipeline" onclick="show_zume_pipeline()">' .  esc_html__( 'Pipeline', 'dt_zume' ) . '</a></li>
                           <li><a href="'. site_url( '/metrics/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
@@ -401,25 +406,25 @@ class DT_Zume_DT_Hook_Metrics extends DT_Zume_DT_Hook_Base
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
         if ( 'metrics' === $url_path ) {
-            wp_enqueue_script( 'dt_zume_script', DT_Zume::get_instance()->includes_uri . 'dt-zume-metrics.js', [
-                'jquery',
-                'jquery-ui-core',
-            ], filemtime( DT_Zume::get_instance()->includes_path . 'dt-zume-metrics.js' ), true );
+            wp_enqueue_script( 'dt_zume_script', DT_Zume::get_instance()->includes_uri . 'metrics.js', [
+            'jquery',
+            'jquery-ui-core',
+            ], filemtime( DT_Zume::get_instance()->includes_path . 'metrics.js' ), true );
 
             wp_localize_script(
             'dt_zume_script', 'wpApiZumeMetrics', [
-                'root' => esc_url_raw( rest_url() ),
-                'plugin_uri' => DT_Zume::get_instance()->dir_uri,
-                'nonce' => wp_create_nonce( 'wp_rest' ),
-                'current_user_login' => wp_get_current_user()->user_login,
-                'current_user_id' => get_current_user_id(),
-                'translations' => [
-                    "zume_project" => __( "Zúme Overview", "dt_zume" ),
-                    "zume_pipeline" => __( "Zúme Pipeline", "dt_zume" ),
-                    "zume_locations" => __( "Zúme Locations", "dt_zume" ),
-                    "zume_languages" => __( "Zúme Languages", "dt_zume" ),
-                    ]
-                ]
+            'root' => esc_url_raw( rest_url() ),
+            'plugin_uri' => DT_Zume::get_instance()->dir_uri,
+            'nonce' => wp_create_nonce( 'wp_rest' ),
+            'current_user_login' => wp_get_current_user()->user_login,
+            'current_user_id' => get_current_user_id(),
+            'translations' => [
+            "zume_project" => __( "Zúme Overview", "dt_zume" ),
+            "zume_pipeline" => __( "Zúme Pipeline", "dt_zume" ),
+            "zume_locations" => __( "Zúme Locations", "dt_zume" ),
+            "zume_languages" => __( "Zúme Languages", "dt_zume" ),
+            ]
+            ]
             );
         }
     }
@@ -427,9 +432,5 @@ class DT_Zume_DT_Hook_Metrics extends DT_Zume_DT_Hook_Base
     public function __construct() {
         add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 10 );
         add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 999 );
-
-        parent::__construct();
     }
 }
-
-
