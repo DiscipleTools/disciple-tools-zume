@@ -392,6 +392,7 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
             <ul class="menu vertical nested is-active">
               <li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
               <li><a href="'. site_url( '/metrics/' ) .'#zume_groups" onclick="show_zume_groups()">' .  esc_html__( 'Groups', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/metrics/' ) .'#zume_individuals" onclick="show_zume_individuals()">' .  esc_html__( 'Individuals', 'dt_zume' ) . '</a></li>
               <li><a href="'. site_url( '/metrics/' ) .'#zume_pipeline" onclick="show_zume_pipeline()">' .  esc_html__( 'Pipeline', 'dt_zume' ) . '</a></li>
               <li><a href="'. site_url( '/metrics/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
               <li><a href="'. site_url( '/metrics/' ) .'#zume_languages" onclick="show_zume_languages()">' .  esc_html__( 'Languages', 'dt_zume' ) . '</a></li>
