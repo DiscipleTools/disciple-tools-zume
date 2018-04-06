@@ -408,12 +408,12 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
 
         if ( 'metrics' === $url_path ) {
             wp_enqueue_script( 'dt_zume_script', DT_Zume::get_instance()->includes_uri . 'metrics.js', [
-            'jquery',
-            'jquery-ui-core',
+                'jquery',
+                'jquery-ui-core',
             ], filemtime( DT_Zume::get_instance()->includes_path . 'metrics.js' ), true );
 
             wp_localize_script(
-            'dt_zume_script', 'wpApiZumeMetrics', [
+                'dt_zume_script', 'wpApiZumeMetrics', [
                     'root' => esc_url_raw( rest_url() ),
                     'plugin_uri' => DT_Zume::get_instance()->dir_uri,
                     'nonce' => wp_create_nonce( 'wp_rest' ),

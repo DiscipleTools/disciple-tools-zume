@@ -238,9 +238,7 @@ function show_zume_groups(){
 
         let chart = new google.visualization.BarChart(document.getElementById('zume-groups'));
         chart.draw(view, options);
-
     }
-
 }
 
 function show_zume_locations(){
@@ -317,11 +315,7 @@ function show_zume_locations(){
         table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
     }
 
-
-
     function drawVisualization() {
-
-        wpApiZumeMetrics.zume_stats.global.group_coordinates.unshift(['number', 'number']) // adds column information to the beginning of the array.
 
         let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.global.group_coordinates)
 
@@ -333,8 +327,6 @@ function show_zume_locations(){
 
         chart.draw(data, options);
     }
-    console.log(wpApiZumeMetrics.zume_stats)
-
 }
 
 function show_zume_languages(){

@@ -74,7 +74,7 @@ class DT_Zume_Core
             return get_option( 'zume_stats_raw_record', [] );
         }
 
-        $check_sum = get_option( 'zume_stats_check_sum', md5('no_check_sum') );
+        $check_sum = get_option( 'zume_stats_check_sum', md5( 'no_check_sum' ) );
 
         $site = self::get_site_details( get_option( 'zume_default_site' ) );
 
@@ -101,9 +101,9 @@ class DT_Zume_Core
                     $new_check_sum = $response['raw_record']['zume_stats_check_sum'] ?? $check_sum;
 
                     update_option( 'zume_stats_check_sum', $new_check_sum );
-                    update_option(  'zume_stats_raw_record', $response['raw_record'] );
-                    update_option(  'zume_stats_last_check', current_time( 'mysql' ) );
-                    return get_option( 'zume_stats_raw_record', []);
+                    update_option( 'zume_stats_raw_record', $response['raw_record'] );
+                    update_option( 'zume_stats_last_check', current_time( 'mysql' ) );
+                    return get_option( 'zume_stats_raw_record', [] );
                 } else {
                     // error
                     dt_write_log( 'RESPONSE ERROR' );

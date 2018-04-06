@@ -288,29 +288,33 @@ class DT_Zume_Metrics
         return $current;
     }
 
-    public static function zume_pipeline_data( )
+    public static function zume_pipeline_data()
     {
         $stats = self::get_zume_project_stats();
 
-        if ( !isset( $stats['site']['session_progress_groups'] ) || !isset( $stats['global']['session_progress_groups'] ) || empty( $stats['site']['session_progress_groups'] || $stats['global']['session_progress_groups']  ) ) {
+        if ( !isset( $stats['site']['session_progress_groups'] ) || !isset( $stats['global']['session_progress_groups'] ) || empty( $stats['site']['session_progress_groups'] || $stats['global']['session_progress_groups'] ) ) {
             return new WP_Error( __FUNCTION__, __( "Incomplete groups progress data" ), [ 'status' => 403 ] );
         }
 
         $report_site = [
             [
-                'Sessions Completed by Groups', 'Groups', [ 'role' => 'annotation' ]
+                'Sessions Completed by Groups',
+        'Groups',
+        [ 'role' => 'annotation' ]
             ]
         ];
-        foreach( $stats['site']['session_progress_groups'] as $key => $value ) {
+        foreach ( $stats['site']['session_progress_groups'] as $key => $value ) {
             $report_site[] = [ ucwords( str_replace( '_', ' ', $key ) ), (int) $value, (int) $value ];
         }
 
         $report_global = [
             [
-                'Sessions Completed by Groups', 'Groups', [ 'role' => 'annotation' ]
+                'Sessions Completed by Groups',
+        'Groups',
+        [ 'role' => 'annotation' ]
             ]
         ];
-        foreach( $stats['global']['session_progress_groups'] as $key => $value ) {
+        foreach ( $stats['global']['session_progress_groups'] as $key => $value ) {
             $report_global[] = [ ucwords( str_replace( '_', ' ', $key ) ), (int) $value, (int) $value ];
         }
 
@@ -320,7 +324,7 @@ class DT_Zume_Metrics
             'data'   => [
                 'chart_site' => $report_site,
                 'chart_global' => $report_global,
-                'timestamp' => current_time('mysql'),
+                'timestamp' => current_time( 'mysql' ),
                 ]
             ];
         } else {
@@ -334,7 +338,7 @@ class DT_Zume_Metrics
     public static function zume_groups_coordinates() {
         DT_Zume_Core::get_project_stats(); // @todo remove
 
-        $raw_stats = get_option('zume_stats_raw_record');
+        $raw_stats = get_option( 'zume_stats_raw_record' );
         $raw_stats = maybe_unserialize( $raw_stats );
 
 
@@ -345,7 +349,7 @@ class DT_Zume_Metrics
                 'status' => true,
                 'data'   => [
                     'coordinates' => $raw_stats['global']['group_coordinates'],
-                    'timestamp' => current_time('mysql'),
+                    'timestamp' => current_time( 'mysql' ),
                 ]
             ];
         } else {
