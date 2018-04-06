@@ -66,10 +66,18 @@ class DT_Zume_Core_Endpoints
          * Charts and Reports
          */
         register_rest_route(
-            $private_namespace, '/zume/zume_pipeline', [
+            $private_namespace, '/zume/chart_zume_pipeline', [
                 [
                 'methods'  => WP_REST_Server::READABLE,
                 'callback' => [ $this, 'chart_zume_pipeline' ],
+                ],
+            ]
+        );
+        register_rest_route(
+            $private_namespace, '/zume/chart_zume_coordinates', [
+                [
+                'methods'  => WP_REST_Server::READABLE,
+                'callback' => [ $this, 'chart_zume_coordinates' ],
                 ],
             ]
         );
@@ -314,6 +322,24 @@ class DT_Zume_Core_Endpoints
         }
 
         $result = DT_Zume_Metrics::zume_pipeline_data();
+        if ( is_wp_error( $result ) ) {
+            return $result;
+        }
+        elseif ( $result["status"] ) {
+            return $result['data'];
+        }
+        else {
+            return new WP_Error( __METHOD__, $result["message"], [ 'status' => 400 ] );
+        }
+    }
+
+    public function chart_zume_coordinates() {
+
+        if ( !self::can_view( 'zume_pipeline', get_current_user() ) ) {
+            return new WP_Error( __FUNCTION__, __( "No permissions to read report" ), [ 'status' => 403 ] );
+        }
+
+        $result = DT_Zume_Metrics::zume_groups_coordinates();
         if ( is_wp_error( $result ) ) {
             return $result;
         }

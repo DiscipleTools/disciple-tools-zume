@@ -389,13 +389,14 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
      */
     public function metrics_menu( $content ) {
         $content .= '<li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Zúme Project', 'dt_zume' ) . '</a>
-                        <ul class="menu vertical nested is-active">
-                          <li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
-                          <li><a href="'. site_url( '/metrics/' ) .'#zume_pipeline" onclick="show_zume_pipeline()">' .  esc_html__( 'Pipeline', 'dt_zume' ) . '</a></li>
-                          <li><a href="'. site_url( '/metrics/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
-                          <li><a href="'. site_url( '/metrics/' ) .'#zume_languages" onclick="show_zume_languages()">' .  esc_html__( 'Languages', 'dt_zume' ) . '</a></li>
-                        </ul>
-                      </li>';
+            <ul class="menu vertical nested is-active">
+              <li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/metrics/' ) .'#zume_groups" onclick="show_zume_groups()">' .  esc_html__( 'Groups', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/metrics/' ) .'#zume_pipeline" onclick="show_zume_pipeline()">' .  esc_html__( 'Pipeline', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/metrics/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/metrics/' ) .'#zume_languages" onclick="show_zume_languages()">' .  esc_html__( 'Languages', 'dt_zume' ) . '</a></li>
+            </ul>
+          </li>';
         return $content;
     }
 
@@ -413,18 +414,21 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
 
             wp_localize_script(
             'dt_zume_script', 'wpApiZumeMetrics', [
-            'root' => esc_url_raw( rest_url() ),
-            'plugin_uri' => DT_Zume::get_instance()->dir_uri,
-            'nonce' => wp_create_nonce( 'wp_rest' ),
-            'current_user_login' => wp_get_current_user()->user_login,
-            'current_user_id' => get_current_user_id(),
-            'translations' => [
-            "zume_project" => __( "Zúme Overview", "dt_zume" ),
-            "zume_pipeline" => __( "Zúme Pipeline", "dt_zume" ),
-            "zume_locations" => __( "Zúme Locations", "dt_zume" ),
-            "zume_languages" => __( "Zúme Languages", "dt_zume" ),
-            ]
-            ]
+                    'root' => esc_url_raw( rest_url() ),
+                    'plugin_uri' => DT_Zume::get_instance()->dir_uri,
+                    'nonce' => wp_create_nonce( 'wp_rest' ),
+                    'current_user_login' => wp_get_current_user()->user_login,
+                    'current_user_id' => get_current_user_id(),
+                    'map_key' => dt_get_option( 'map_key' ),
+                    'zume_stats' => DT_Zume_Core::get_project_stats(),
+                    'translations' => [
+                        "zume_project" => __( "Zúme Overview", "dt_zume" ),
+                        "zume_pipeline" => __( "Zúme Pipeline", "dt_zume" ),
+                        "zume_groups" => __( "Zúme Groups", "dt_zume" ),
+                        "zume_locations" => __( "Zúme Locations", "dt_zume" ),
+                        "zume_languages" => __( "Zúme Languages", "dt_zume" ),
+                    ]
+                ]
             );
         }
     }
