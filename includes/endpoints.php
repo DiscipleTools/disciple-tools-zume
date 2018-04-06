@@ -72,13 +72,22 @@ class DT_Zume_Core_Endpoints
                 'callback' => [ $this, 'chart_zume_pipeline' ],
                 ],
             ]
-        );
+        );// @todo remove
         register_rest_route(
             $private_namespace, '/zume/chart_zume_coordinates', [
                 [
                 'methods'  => WP_REST_Server::READABLE,
                 'callback' => [ $this, 'chart_zume_coordinates' ],
                 ],
+            ]
+        ); // @todo remove
+
+        register_rest_route(
+            $private_namespace, '/zume/reset_zume_stats', [
+               [
+                   'methods'  => WP_REST_Server::READABLE,
+                   'callback' => [ $this, 'reset_zume_stats' ],
+               ],
             ]
         );
     }
@@ -243,7 +252,7 @@ class DT_Zume_Core_Endpoints
         } else {
             return new WP_Error( 'failed_authentication', 'Failed id and/or token authentication.' );
         }
-    }
+    } // @todo finish
 
     public function get_id_from_zume_foreign_key( $zume_foreign_key ) {
         global $wpdb;
@@ -331,7 +340,7 @@ class DT_Zume_Core_Endpoints
         else {
             return new WP_Error( __METHOD__, $result["message"], [ 'status' => 400 ] );
         }
-    }
+    } // @todo remove
 
     public function chart_zume_coordinates() {
 
@@ -348,6 +357,23 @@ class DT_Zume_Core_Endpoints
         }
         else {
             return new WP_Error( __METHOD__, $result["message"], [ 'status' => 400 ] );
+        }
+    } // @todo remove
+
+    public function reset_zume_stats() {
+
+        if ( !self::can_view( 'zume_pipeline', get_current_user() ) ) {
+            return new WP_Error( __FUNCTION__, __( "No permissions to read report" ), [ 'status' => 403 ] );
+        }
+
+        delete_option( 'zume_stats_last_check' );
+        delete_option( 'zume_stats_check_sum' );
+        $result = DT_Zume_Core::get_project_stats();
+
+        if ( ! empty( $result ) ) {
+            return $result;
+        } else {
+            return get_option( 'zume_stats_raw_record' );
         }
     }
 

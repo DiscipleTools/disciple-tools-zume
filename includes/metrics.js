@@ -1,4 +1,6 @@
 jQuery(document).ready(function() {
+    console.log(wpApiZumeMetrics.zume_stats)
+
     if('#zume_project' === window.location.hash) {
         show_zume_project()
     }
@@ -23,65 +25,110 @@ function show_zume_project(){
     let chartDiv = jQuery('#chart')
     chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_project +'</span><hr />')
 
-    chartDiv.append(`<div id="table_div"></div><br><br><div id="dashboard_div">
-      <div id="filter_div"></div>
-      <div id="chart_div"></div>
-    </div>`)
+    chartDiv.append(`<div id="table_div"></div><br><br><p class="section-subheader text-center" >Overview</p>
+        <span id='colchart_diff' style='width: 450px; height: 250px; display: inline-block'></span>
+        <span id='barchart_diff' style='width: 450px; height: 250px; display: inline-block'></span>`)
 
     google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
 
     google.charts.setOnLoadCallback(drawTable);
-    google.charts.setOnLoadCallback(drawDashboard);
+    google.charts.setOnLoadCallback(drawChart);
 
-    // Callback that creates and populates a data table,
-    // instantiates a dashboard, a range slider and a pie chart,
-    // passes in the data and draws it.
-    function drawDashboard() {
+    function drawTable() {
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.global.project_overview);
+        let table = new google.visualization.Table(document.getElementById('table_div'));
+        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+    }
 
-        // Create our data table.
-        var data = google.visualization.arrayToDataTable([
-            ['Name', 'Donuts eaten'],
-            ['Michael' , 5],
-            ['Elisa', 7],
-            ['Robert', 3],
-            ['John', 2],
-            ['Jessica', 6],
-            ['Aaron', 1],
-            ['Margareth', 8]
+    function drawChart() {
+
+        let projectOverview = wpApiZumeMetrics.zume_stats.global.project_overview
+        var oldDataSplice = []
+        projectOverview.forEach(function(currentValue, index, arr){
+            let temp = currentValue.slice(0)
+            temp.splice(1,1)
+            temp.splice(2,5)
+            oldDataSplice[index] = temp
+
+        })
+
+        var newDataSplice = []
+        projectOverview.forEach(function(currentValue, index, arr){
+            let temp = currentValue.slice(0)
+            temp.splice(2, 6)
+            newDataSplice[index] = temp
+        })
+
+        let oldData = google.visualization.arrayToDataTable(oldDataSplice);
+        let newData = google.visualization.arrayToDataTable(newDataSplice);
+
+        let colChartDiff = new google.visualization.ColumnChart(document.getElementById('colchart_diff'));
+        let barChartDiff = new google.visualization.BarChart(document.getElementById('barchart_diff'));
+
+        let options = { legend: { position: 'top' } };
+
+        let diffData = colChartDiff.computeDiff(oldData, newData);
+        colChartDiff.draw(diffData, options);
+        barChartDiff.draw(diffData, options);
+    }
+
+    chartDiv.append(`<div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
+            <a onclick="refresh_stats_data( 'show_zume_project' ); jQuery('.spinner').show();">Refresh</a>
+            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
+            </div>`)
+}
+
+function show_zume_pipeline(){
+    "use strict";
+
+    let screenHeight = jQuery(window).height()
+    let chartHeight = screenHeight / 1.8
+    let chartDiv = jQuery('#chart')
+
+    chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_pipeline +'</span><hr>');
+
+    chartDiv.append(`<div id="table_div"></div><br><br><div id="zume-pipeline-site" style="height: ` + chartHeight + `px; margin: 0 1em; "></div>`)
+
+    google.charts.load('current', {packages: ['corechart', 'bar', 'table']});
+    google.charts.setOnLoadCallback(drawBarchart)
+    google.charts.setOnLoadCallback(drawTable)
+
+    function drawBarchart() {
+
+        let chartData = google.visualization.arrayToDataTable( [
+            ['Session', 'Groups', {'role': 'annotation'}],
+            ['Session 1', 3000, 3000],
+            ['Session 2', 2000, 2000],
+            ['Session 3', 1900, 1900],
+            ['Session 4', 1400, 1400],
+            ['Session 5', 1200, 1200],
+            ['Session 5', 900, 900],
+            ['Session 6', 670, 670],
+            ['Session 7', 550, 550],
+            ['Session 8', 460, 460],
+            ['Session 9', 100, 100],
+            ['Session 10', 40, 40],
         ]);
 
-        // Create a dashboard.
-        var dashboard = new google.visualization.Dashboard(
-            document.getElementById('dashboard_div'));
+        let options = {
+            bars: 'horizontal',
+            chartArea: {
+                left: '15%',
+                top: '0%',
+                width: "80%",
+                height: "90%" },
+            hAxis: {
+                scaleType: 'mirrorLog',
+                title: 'logarithmic scale'
+            },
+            legend: {
+                position: 'none'
+            },
+        }
 
-        // Create a range slider, passing some options
-        var donutRangeSlider = new google.visualization.ControlWrapper({
-            'controlType': 'NumberRangeFilter',
-            'containerId': 'filter_div',
-            'options': {
-                'filterColumnLabel': 'Donuts eaten'
-            }
-        });
+        let chart = new google.visualization.BarChart(document.getElementById('zume-pipeline-site'));
+        chart.draw(chartData, options);
 
-        // Create a pie chart, passing some options
-        var pieChart = new google.visualization.ChartWrapper({
-            'chartType': 'PieChart',
-            'containerId': 'chart_div',
-            'options': {
-                'width': 600,
-                'height': 600,
-                'pieSliceText': 'value',
-                'legend': 'right'
-            }
-        });
-
-        // Establish dependencies, declaring that 'filter' drives 'pieChart',
-        // so that the pie chart will only display entries that are let through
-        // given the chosen slider range.
-        dashboard.bind(donutRangeSlider, pieChart);
-
-        // Draw the dashboard.
-        dashboard.draw(data);
     }
 
     function drawTable() {
@@ -92,11 +139,17 @@ function show_zume_project(){
         data.addColumn('number', 'Last 90 Days');
         data.addColumn('number', 'All Time');
         data.addRows([
-            ['New Trainees', 100, 400, 1040, 3000],
-            ['New Groups', 100, 400, 1040, 3000],
-            ['Trainees Completed Sessions', 100, 400, 1040, 3000],
-            ['Sessions Completed', 100, 400, 1040, 3000],
-            ['Zúme Course Completions', 100, 400, 1040, 3000],
+            ['Session 1', 100, 400, 1040, 3000],
+            ['Session 2', 100, 400, 1040, 3000],
+            ['Session 3', 100, 400, 1040, 3000],
+            ['Session 4', 100, 400, 1040, 3000],
+            ['Session 5', 100, 400, 1040, 3000],
+            ['Session 5', 100, 400, 1040, 3000],
+            ['Session 6', 100, 400, 1040, 3000],
+            ['Session 7', 100, 400, 1040, 3000],
+            ['Session 8', 100, 400, 1040, 3000],
+            ['Session 9', 100, 400, 1040, 3000],
+            ['Session 10', 100, 400, 1040, 3000],
         ]);
 
         let table = new google.visualization.Table(document.getElementById('table_div'));
@@ -104,101 +157,11 @@ function show_zume_project(){
         table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
     }
 
+    chartDiv.append(`<div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
+            <a onclick="refresh_stats_data( 'show_zume_pipeline' ); jQuery('.spinner').show();">Refresh</a>
+            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
+            </div>`)
 
-}
-
-function show_zume_pipeline(){
-    "use strict";
-    jQuery.ajax({
-        type: "GET",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        url: wpApiZumeMetrics.root + 'dt/v1/zume/chart_zume_pipeline',
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader('X-WP-Nonce', wpApiZumeMetrics.nonce);
-        },
-    })
-        .done(function (data) {
-
-            let screenHeight = jQuery(window).height()
-            let chartHeight = screenHeight / 1.8
-            let chartDiv = jQuery('#chart')
-
-
-            chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_pipeline +'</span><hr>');
-
-            chartDiv.append(`
-                    <div id="table_div"></div><br><br><div id="zume-pipeline-site" style="height: ` + chartHeight + `px; margin: 0 1em; "></div>
-                `)
-
-            google.charts.load('current', {packages: ['corechart', 'bar', 'table', 'sankey']});
-            google.charts.setOnLoadCallback(drawBarchart)
-            google.charts.setOnLoadCallback(drawTable)
-
-            function drawBarchart() {
-
-                let chartData = google.visualization.arrayToDataTable( data.chart_global );
-
-                let options = {
-                    bars: 'horizontal',
-                    chartArea: {
-                        left: '15%',
-                        top: '0%',
-                        width: "80%",
-                        height: "90%" },
-                    hAxis: {
-                        scaleType: 'mirrorLog',
-                        title: 'logarithmic scale'
-                    },
-                    legend: {
-                        position: 'none'
-                    },
-                }
-
-                let chart = new google.visualization.BarChart(document.getElementById('zume-pipeline-site'));
-                chart.draw(chartData, options);
-
-            }
-
-            function drawTable() {
-                let data = new google.visualization.DataTable();
-                data.addColumn('string', 'Label');
-                data.addColumn('number', 'Last 7 Days');
-                data.addColumn('number', 'Last 30 Days');
-                data.addColumn('number', 'Last 90 Days');
-                data.addColumn('number', 'All Time');
-                data.addRows([
-                    ['Session 1', 100, 400, 1040, 3000],
-                    ['Session 2', 100, 400, 1040, 3000],
-                    ['Session 3', 100, 400, 1040, 3000],
-                    ['Session 4', 100, 400, 1040, 3000],
-                    ['Session 5', 100, 400, 1040, 3000],
-                    ['Session 5', 100, 400, 1040, 3000],
-                    ['Session 6', 100, 400, 1040, 3000],
-                    ['Session 7', 100, 400, 1040, 3000],
-                    ['Session 8', 100, 400, 1040, 3000],
-                    ['Session 9', 100, 400, 1040, 3000],
-                    ['Session 10', 100, 400, 1040, 3000],
-                ]);
-
-                let table = new google.visualization.Table(document.getElementById('table_div'));
-
-                table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-            }
-
-        })
-        .fail(function (err) {
-            let screenHeight = jQuery(window).height()
-            let chartHeight = screenHeight / 1.6
-            let chartDiv = jQuery('#chart')
-
-            let height = jQuery(window).height() - jQuery('header').height() - 150
-            chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_pipeline +'</span><span id="errors"></span><hr' +
-                ' />');
-            console.log("error")
-            console.log(err)
-            jQuery("#errors").append(err.responseText)
-        })
 }
 
 function show_zume_groups(){
@@ -210,14 +173,13 @@ function show_zume_groups(){
 
     chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_groups +'</span><hr>');
 
-    chartDiv.append(`<p class="section-subheader text-center" >Number of groups according to their member count</span>
-            <br><div id="zume-groups" style="height: ` + chartHeight + `px; margin: 0 1em; "></div>`)
+    chartDiv.append(`<p class="section-subheader text-center" >Number of groups according to their member count</p>
+            <div id="zume-groups" style="height: ` + chartHeight + `px; margin: 0 1em; "></div>`)
 
     google.charts.load('current', {packages: ['corechart', 'bar']});
     google.charts.setOnLoadCallback(drawBarchart)
 
     function drawBarchart() {
-        console.log(wpApiZumeMetrics.zume_stats.global.members_per_group)
 
         let data = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.global.members_per_group );
         let view = new google.visualization.DataView(data)
@@ -239,6 +201,11 @@ function show_zume_groups(){
         let chart = new google.visualization.BarChart(document.getElementById('zume-groups'));
         chart.draw(view, options);
     }
+
+    chartDiv.append(`<div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
+            <a onclick="refresh_stats_data( 'show_zume_groups' ); jQuery('.spinner').show();">Refresh</a>
+            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
+            </div>`)
 }
 
 function show_zume_locations(){
@@ -327,6 +294,11 @@ function show_zume_locations(){
 
         chart.draw(data, options);
     }
+
+    chartDiv.append(`<div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
+            <a onclick="refresh_stats_data( 'show_zume_locations' ); jQuery('.spinner').show();">Refresh</a>
+            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
+            </div>`)
 }
 
 function show_zume_languages(){
@@ -395,4 +367,50 @@ function show_zume_languages(){
 
         table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
     }
+
+    chartDiv.append(`<div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
+            <a onclick="refresh_stats_data( 'show_zume_languages' ); jQuery('.spinner').show();">Refresh</a>
+            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
+            </div>`)
+}
+
+function refresh_stats_data( page ){
+    jQuery.ajax({
+        type: "GET",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        url: wpApiMetricsPage.root + 'dt/v1/zume/reset_zume_stats',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('X-WP-Nonce', wpApiMetricsPage.nonce);
+        },
+    })
+        .done(function (data) {
+            wpApiZumeMetrics.zume_stats = data
+            switch( page ) {
+                case 'show_zume_languages':
+                    show_zume_languages()
+                    break;
+                case 'show_zume_locations':
+                    show_zume_locations()
+                    break;
+                case 'show_zume_groups':
+                    show_zume_groups()
+                    break;
+                case 'show_zume_pipeline':
+                    show_zume_pipeline()
+                    break;
+                case 'show_zume_project':
+                    show_zume_project()
+                    break;
+
+                default:
+                    break;
+            }
+        })
+        .fail(function (err) {
+            console.log("error")
+            console.log(err)
+            jQuery("#errors").append(err.responseText)
+        })
+
 }

@@ -264,9 +264,9 @@ class DT_Zume_Metrics
                 ]
             ]
         ];
-    }
+    } // @todo remove
 
-    public static function get_zume_project_stats_cached(): array {
+    public static function get_zume_project_stats_cached(): array { // @todo remove
         // Check for transient cache first for speed
         $current = get_transient( 'zume_project_stats' );
 
@@ -286,7 +286,7 @@ class DT_Zume_Metrics
         set_transient( 'zume_project_stats', $current, 24 * HOUR_IN_SECONDS ); // transient is set to update every 24 hours.
 
         return $current;
-    }
+    } // @todo remove
 
     public static function zume_pipeline_data()
     {
@@ -333,7 +333,7 @@ class DT_Zume_Metrics
             'message' => 'Failed to build critical path data.',
             ];
         }
-    }
+    } // @todo remove
 
     public static function zume_groups_coordinates() {
         DT_Zume_Core::get_project_stats(); // @todo remove
@@ -358,7 +358,7 @@ class DT_Zume_Metrics
                 'message' => 'No data.',
             ];
         }
-    }
+    } // @todo remove
 
 }
 

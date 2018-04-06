@@ -95,7 +95,9 @@ class DT_Zume_Core
                 if ( $response['status'] == 'OK' ) {
                     // no update needed
                     update_option( 'zume_stats_last_check', current_time( 'mysql' ) );
+
                     return get_option( 'zume_stats_raw_record', [] );
+
                 } elseif ( $response['status'] == 'Update_Needed' && isset( $response['raw_record'] ) ) {
                     // updated needed
                     $new_check_sum = $response['raw_record']['zume_stats_check_sum'] ?? $check_sum;
@@ -103,22 +105,27 @@ class DT_Zume_Core
                     update_option( 'zume_stats_check_sum', $new_check_sum );
                     update_option( 'zume_stats_raw_record', $response['raw_record'] );
                     update_option( 'zume_stats_last_check', current_time( 'mysql' ) );
+
                     return get_option( 'zume_stats_raw_record', [] );
+
                 } else {
                     // error
-                    dt_write_log( 'RESPONSE ERROR' );
+                    dt_write_log( 'RESPONSE STATUS ERROR' );
                     dt_write_log( $response );
+
                     return [];
                 }
             } else {
                 // error
-                dt_write_log( 'No Status in Result' );
+                dt_write_log( 'RESPONSE STATUS NOT SET' );
                 dt_write_log( $response );
+
                 return [];
             }
         } else {
-            dt_write_log( 'No Status in Result' );
+            dt_write_log( 'RESPONSE BODY ERROR' );
             dt_write_log( $result );
+
             return [];
         }
     }
