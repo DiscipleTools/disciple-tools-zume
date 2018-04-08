@@ -434,8 +434,17 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
         }
     }
 
+    public function check_zume_raw_data() {
+        $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
+
+        if ( 'metrics' === $url_path && DT_Zume_Core::test_zume_global_stats_needs_update() ) {
+            DT_Zume_Core::get_project_stats();
+        }
+    }
+
     public function __construct() {
         add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 10 );
         add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 999 );
+        add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data'] );
     }
 }

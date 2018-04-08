@@ -68,13 +68,14 @@ class DT_Zume_Core
     public static function get_project_stats(): array {
         dt_write_log( __METHOD__ );
 
-        // check if already checked today
-        $timestamp = get_option( 'zume_stats_last_check' );
-        if ( ! ( date( 'Ymd' ) > date( 'Ymd', strtotime( $timestamp ) ) ) ) {
-            return get_option( 'zume_stats_raw_record', [] );
+        $raw_record = get_option( 'zume_stats_raw_record' );
+        if ( ! empty( $raw_record ) && isset( $raw_record['timestamp'] ) ) { // check if already checked today
+            if ( ! ( date( 'Ymd' ) > date( 'Ymd', strtotime( $raw_record['timestamp'] ) ) ) ) {
+                return $raw_record;
+            }
         }
 
-        $check_sum = get_option( 'zume_stats_check_sum', md5( 'no_check_sum' ) );
+        $check_sum = $raw_record['zume_stats_check_sum'] ?: md5( 'no_check_sum' );
 
         $site = self::get_site_details( get_option( 'zume_default_site' ) );
 
@@ -93,19 +94,15 @@ class DT_Zume_Core
 
             if ( isset( $response['status'] ) ) {
                 if ( $response['status'] == 'OK' ) {
-                    // no update needed
-                    update_option( 'zume_stats_last_check', current_time( 'mysql' ) );
+                    // updated timestamp of the raw record
+                    $raw_record = get_option( 'zume_stats_raw_record');
+                    $raw_record['timestamp'] = current_time( 'mysql' );
+                    update_option( 'zume_stats_raw_record', $raw_record );
 
                     return get_option( 'zume_stats_raw_record', [] );
 
                 } elseif ( $response['status'] == 'Update_Needed' && isset( $response['raw_record'] ) ) {
-                    // updated needed
-                    $new_check_sum = $response['raw_record']['zume_stats_check_sum'] ?? $check_sum;
-
-                    update_option( 'zume_stats_check_sum', $new_check_sum );
                     update_option( 'zume_stats_raw_record', $response['raw_record'] );
-                    update_option( 'zume_stats_last_check', current_time( 'mysql' ) );
-
                     return get_option( 'zume_stats_raw_record', [] );
 
                 } else {
@@ -136,6 +133,17 @@ class DT_Zume_Core
             return false;
         }
         return true;
+    }
+
+    public static function test_zume_global_stats_needs_update() : bool {
+        $raw_record = get_option( 'zume_stats_raw_record' );
+        if ( empty( $raw_record) ) {
+            return true;
+        }
+        if ( date( 'Ymd' ) > date( 'Ymd', strtotime( $raw_record['timestamp'] ) ) ) {
+            return true;
+        }
+        return false;
     }
 
     /**
