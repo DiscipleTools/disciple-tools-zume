@@ -366,12 +366,17 @@ class DT_Zume_Core_Endpoints
             return new WP_Error( __FUNCTION__, __( "No permissions to read report" ), [ 'status' => 403 ] );
         }
 
-        delete_option( 'zume_stats_last_check' );
-        delete_option( 'zume_stats_check_sum' );
-        $result = DT_Zume_Core::get_project_stats();
-
-        if ( ! empty( $result ) ) {
-            return $result;
+        if ( DT_Zume_Core::test_zume_global_stats_needs_update() ) {
+            $raw_record = DT_Zume_Core::get_project_stats();
+            if ( empty( $raw_record ) ) {
+                // log failure and leave
+                dt_write_log( __METHOD__ );
+                dt_write_log( 'Attempt to update metrics data failed.' );
+                dt_write_log( new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' ) );
+                return new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' );
+            } else {
+                return $raw_record;
+            }
         } else {
             return get_option( 'zume_stats_raw_record' );
         }
