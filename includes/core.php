@@ -66,10 +66,9 @@ class DT_Zume_Core
      * @return array  Returns array if success, empty array on fail
      */
     public static function get_project_stats(): array {
-        dt_write_log( __METHOD__ );
 
         $raw_record = get_option( 'zume_stats_raw_record' );
-        if ( ! empty( $raw_record ) && isset( $raw_record['timestamp'] ) ) { // check if already checked today
+        if ( ! empty( $raw_record ) && isset( $raw_record['timestamp'] ) && ! empty( $raw_record['timestamp'] ) ) { // check if already checked today
             if ( ! ( date( 'Ymd' ) > date( 'Ymd', strtotime( $raw_record['timestamp'] ) ) ) ) {
                 return $raw_record;
             }

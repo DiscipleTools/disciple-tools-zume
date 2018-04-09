@@ -66,23 +66,6 @@ class DT_Zume_Core_Endpoints
          * Charts and Reports
          */
         register_rest_route(
-            $private_namespace, '/zume/chart_zume_pipeline', [
-                [
-                'methods'  => WP_REST_Server::READABLE,
-                'callback' => [ $this, 'chart_zume_pipeline' ],
-                ],
-            ]
-        );// @todo remove
-        register_rest_route(
-            $private_namespace, '/zume/chart_zume_coordinates', [
-                [
-                'methods'  => WP_REST_Server::READABLE,
-                'callback' => [ $this, 'chart_zume_coordinates' ],
-                ],
-            ]
-        ); // @todo remove
-
-        register_rest_route(
             $private_namespace, '/zume/reset_zume_stats', [
                [
                    'methods'  => WP_REST_Server::READABLE,
@@ -324,61 +307,30 @@ class DT_Zume_Core_Endpoints
         return $fields;
     }
 
-    public function chart_zume_pipeline()
-    {
-        if ( !self::can_view( 'zume_pipeline', get_current_user() ) ) {
-            return new WP_Error( __FUNCTION__, __( "No permissions to read report" ), [ 'status' => 403 ] );
-        }
-
-        $result = DT_Zume_Metrics::zume_pipeline_data();
-        if ( is_wp_error( $result ) ) {
-            return $result;
-        }
-        elseif ( $result["status"] ) {
-            return $result['data'];
-        }
-        else {
-            return new WP_Error( __METHOD__, $result["message"], [ 'status' => 400 ] );
-        }
-    } // @todo remove
-
-    public function chart_zume_coordinates() {
-
-        if ( !self::can_view( 'zume_pipeline', get_current_user() ) ) {
-            return new WP_Error( __FUNCTION__, __( "No permissions to read report" ), [ 'status' => 403 ] );
-        }
-
-        $result = DT_Zume_Metrics::zume_groups_coordinates();
-        if ( is_wp_error( $result ) ) {
-            return $result;
-        }
-        elseif ( $result["status"] ) {
-            return $result['data'];
-        }
-        else {
-            return new WP_Error( __METHOD__, $result["message"], [ 'status' => 400 ] );
-        }
-    } // @todo remove
-
     public function reset_zume_stats() {
 
         if ( !self::can_view( 'zume_pipeline', get_current_user() ) ) {
             return new WP_Error( __FUNCTION__, __( "No permissions to read report" ), [ 'status' => 403 ] );
         }
 
-        if ( DT_Zume_Core::test_zume_global_stats_needs_update() ) {
-            $raw_record = DT_Zume_Core::get_project_stats();
-            if ( empty( $raw_record ) ) {
-                // log failure and leave
-                dt_write_log( __METHOD__ );
-                dt_write_log( 'Attempt to update metrics data failed.' );
-                dt_write_log( new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' ) );
-                return new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' );
-            } else {
-                return $raw_record;
-            }
+        $raw_record = get_option( 'zume_stats_raw_record' );
+        if( isset( $raw_record['timestamp'] ) && isset( $raw_record['zume_stats_check_sum'] ) ) {
+            $raw_record['timestamp'] = '';
+            $raw_record['zume_stats_check_sum'] = '';
+            update_option('zume_stats_raw_record', $raw_record ); // keep array in case of failure in retrieval
         } else {
-            return get_option( 'zume_stats_raw_record' );
+            update_option('zume_stats_raw_record', [] ); // wipe corrupt array
+        }
+
+        $raw_record = DT_Zume_Core::get_project_stats();
+        if ( empty( $raw_record ) ) {
+            // log failure and leave
+            dt_write_log( __METHOD__ );
+            dt_write_log( 'Attempt to update metrics data failed.' );
+            dt_write_log( new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' ) );
+            return new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' );
+        } else {
+            return $raw_record;
         }
     }
 
