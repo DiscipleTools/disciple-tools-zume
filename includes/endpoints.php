@@ -314,12 +314,12 @@ class DT_Zume_Core_Endpoints
         }
 
         $raw_record = get_option( 'zume_stats_raw_record' );
-        if( isset( $raw_record['timestamp'] ) && isset( $raw_record['zume_stats_check_sum'] ) ) {
+        if ( isset( $raw_record['timestamp'] ) && isset( $raw_record['zume_stats_check_sum'] ) ) {
             $raw_record['timestamp'] = '';
             $raw_record['zume_stats_check_sum'] = '';
-            update_option('zume_stats_raw_record', $raw_record ); // keep array in case of failure in retrieval
+            update_option( 'zume_stats_raw_record', $raw_record ); // keep array in case of failure in retrieval
         } else {
-            update_option('zume_stats_raw_record', [] ); // wipe corrupt array
+            update_option( 'zume_stats_raw_record', [] ); // wipe corrupt array
         }
 
         $raw_record = DT_Zume_Core::get_project_stats();
@@ -327,8 +327,8 @@ class DT_Zume_Core_Endpoints
             // log failure and leave
             dt_write_log( __METHOD__ );
             dt_write_log( 'Attempt to update metrics data failed.' );
-            dt_write_log( new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' ) );
-            return new WP_Error(__METHOD__, 'Failed to get remote statistics data. Returned empty array.' );
+            dt_write_log( new WP_Error( __METHOD__, 'Failed to get remote statistics data. Returned empty array.' ) );
+            return new WP_Error( __METHOD__, 'Failed to get remote statistics data. Returned empty array.' );
         } else {
             return $raw_record;
         }

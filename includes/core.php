@@ -94,7 +94,7 @@ class DT_Zume_Core
             if ( isset( $response['status'] ) ) {
                 if ( $response['status'] == 'OK' ) {
                     // updated timestamp of the raw record
-                    $raw_record = get_option( 'zume_stats_raw_record');
+                    $raw_record = get_option( 'zume_stats_raw_record' );
                     $raw_record['timestamp'] = current_time( 'mysql' );
                     update_option( 'zume_stats_raw_record', $raw_record );
 
@@ -136,7 +136,7 @@ class DT_Zume_Core
 
     public static function test_zume_global_stats_needs_update() : bool {
         $raw_record = get_option( 'zume_stats_raw_record' );
-        if ( empty( $raw_record) ) {
+        if ( empty( $raw_record ) ) {
             return true;
         }
         if ( date( 'Ymd' ) > date( 'Ymd', strtotime( $raw_record['timestamp'] ) ) ) {

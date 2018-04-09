@@ -73,7 +73,7 @@ function show_zume_project(){
     let hero = wpApiZumeMetrics.zume_stats.hero_stats
     jQuery('#group_numbers').append( hero.trained_groups )
     jQuery('#people_numbers').append( hero.trained_people )
-    jQuery('#hours_trained').append( hero.hours_trained )
+    jQuery('#hours_trained').append( hero.hours_trained_as_group )
     jQuery('#country_numbers').append( hero.total_countries )
 
     // build charts
