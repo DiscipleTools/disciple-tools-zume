@@ -34,6 +34,10 @@ class DT_Zume_Core
             ]
         ];
         $result = self::remote_send( 'check_for_update', $site['url'], $args );
+        if ( is_wp_error( $result ) || is_wp_error( $result['body'] ) ) {
+            dt_write_log( $result );
+            return false;
+        }
         if ( isset( $result['body'] ) ) {
             $response = json_decode( $result['body'], true );
             if ( isset( $response['status'] ) ) {
