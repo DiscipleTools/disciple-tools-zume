@@ -128,6 +128,7 @@ class DT_Zume_Menu
 
         // Runs validation of the database when page is loaded.
         $this->site_default_metabox();
+        $this->raw_data_retrieval_test();
 
         // begin right column template
         $this->template( 'right_column' );
@@ -242,6 +243,111 @@ class DT_Zume_Menu
             </table>
             <br>
             <!-- End Box -->
+        </form>
+        <?php
+    }
+
+    public static function raw_data_retrieval_test()
+    {
+        $error = [];
+        // Check for post
+        if ( isset( $_POST['dt_site_raw_data_nonce'] ) && ! empty( $_POST['dt_site_raw_data_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_site_raw_data_nonce'] ) ), 'dt_site_raw_data_'. get_current_user_id() ) ) {
+            if ( isset( $_POST['raw_data_test'] ) && ! empty( $_POST['raw_data_test'] ) ) {
+
+                $raw_record = get_option( 'zume_stats_raw_record' );
+                $error[] = $raw_record;
+                if ( ! empty( $raw_record ) && isset( $raw_record['timestamp'] ) && ! empty( $raw_record['timestamp'] ) ) { // check if already checked today
+                    if ( ! ( date( 'Ymd' ) > date( 'Ymd', strtotime( $raw_record['timestamp'] ) ) ) ) {
+                        $error[] = $raw_record;
+                    }
+                }
+
+                $check_sum = $raw_record['zume_stats_check_sum'] ?: md5( 'no_check_sum' );
+
+                $site = DT_Zume_Core::get_site_details( get_option( 'zume_default_site' ) );
+
+                // Send remote request
+                $args = [
+                    'method' => 'POST',
+                    'body' => [
+                        'transfer_token' => $site['transfer_token'],
+                        'zume_stats_check_sum' => $check_sum,
+                    ]
+                ];
+                $result = DT_Zume_Core::remote_send( 'get_project_stats', $site['url'], $args );
+                if ( is_wp_error( $result ) || is_wp_error( $result['body'] ) ) {
+                    dt_write_log( $result );
+                    $error[] = get_option( 'zume_stats_raw_record', [] );
+                }
+                if ( isset( $result['body'] ) ) {
+                    $response = json_decode( $result['body'], true );
+
+                    if ( isset( $response['status'] ) ) {
+                        if ( $response['status'] == 'OK' ) {
+                            // updated timestamp of the raw record
+                            $raw_record = get_option( 'zume_stats_raw_record' );
+                            $raw_record['timestamp'] = current_time( 'mysql' );
+                            update_option( 'zume_stats_raw_record', $raw_record );
+
+                            $error[] = get_option( 'zume_stats_raw_record', [] );
+
+                        } elseif ( $response['status'] == 'Update_Needed' && isset( $response['raw_record'] ) ) {
+                            update_option( 'zume_stats_raw_record', $response['raw_record'] );
+                            $error[] = get_option( 'zume_stats_raw_record', [] );
+
+                        } else {
+                            // error
+                            dt_write_log( 'RESPONSE STATUS ERROR' );
+                            dt_write_log( $response );
+
+                            $error[] = [];
+                        }
+                    } else {
+                        // error
+                        dt_write_log( 'RESPONSE STATUS NOT SET' );
+                        dt_write_log( $response );
+
+                        $error[] = [];
+                    }
+                } else {
+                    dt_write_log( 'RESPONSE BODY ERROR' );
+                    dt_write_log( $result );
+
+                    $error[] = [];
+                }
+            }
+        }
+
+        ?>
+        <form method="post" action="">
+            <?php wp_nonce_field( 'dt_site_raw_data_'. get_current_user_id(), 'dt_site_raw_data_nonce', false, true ) ?>
+
+            <!-- Box -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <td>
+                        <?php esc_html_e( 'Retrieval Test' ) ?>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr>
+                    <td>
+                        <button class="button" name="raw_data_test" value="1" type="submit"><?php esc_html_e( 'Test' ) ?></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <!-- End Box -->
+
+            <?php if ( ! empty( $error ) ) {
+                print_r( $error );
+}
+            ?>
+
         </form>
         <?php
     }
