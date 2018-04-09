@@ -10,9 +10,6 @@ jQuery(document).ready(function() {
     if('#zume_locations' === window.location.hash) {
         show_zume_locations()
     }
-    if('#zume_languages' === window.location.hash) {
-        show_zume_languages()
-    }
     if('#zume_groups' === window.location.hash) {
         show_zume_groups()
     }
@@ -312,6 +309,10 @@ function show_zume_people(){
                 <hr>
             </div>
             <div class="cell center">
+                <span class="section-subheader">Language Users in Zúme</span>
+                <div id="people_languages" style="height: 500px; margin: 0 1em; "></div>
+            </div>
+            <div class="cell center">
                 <span class="section-subheader center">Misc</span>
             </div>
             <div class="cell">
@@ -330,6 +331,7 @@ function show_zume_people(){
 
     google.charts.setOnLoadCallback(drawTable);
     google.charts.setOnLoadCallback(drawProgress);
+    google.charts.setOnLoadCallback(drawBarChart)
 
 
     function drawProgress() {
@@ -350,6 +352,22 @@ function show_zume_people(){
 
         var chart = new google.visualization.LineChart(document.getElementById('active_people_timeline'));
         chart.draw(data, options);
+    }
+
+    function drawBarChart() {
+        let chartData = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.people_languages );
+        let options = {
+            bars: 'horizontal',
+            chartArea: {
+                left: '10%',
+                top: '10px',
+                width: "80%",
+                height: "90%" },
+            pieHole: 0.4,
+        }
+
+        let chart = new google.visualization.PieChart(document.getElementById('people_languages'));
+        chart.draw(chartData, options);
     }
 
     function drawTable() {

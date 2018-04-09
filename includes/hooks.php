@@ -395,7 +395,6 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
               <li><a href="'. site_url( '/metrics/' ) .'#zume_people" onclick="show_zume_people()">' .  esc_html__( 'People', 'dt_zume' ) . '</a></li>
               <li><a href="'. site_url( '/metrics/' ) .'#zume_pipeline" onclick="show_zume_pipeline()">' .  esc_html__( 'Pipeline', 'dt_zume' ) . '</a></li>
               <li><a href="'. site_url( '/metrics/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
-              <li><a href="'. site_url( '/metrics/' ) .'#zume_languages" onclick="show_zume_languages()">' .  esc_html__( 'Languages', 'dt_zume' ) . '</a></li>
             </ul>
           </li>';
         return $content;
@@ -428,7 +427,6 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
                         "zume_groups" => __( "Zúme Groups", "dt_zume" ),
                         "zume_people" => __( "Zúme People", "dt_zume" ),
                         "zume_locations" => __( "Zúme Locations", "dt_zume" ),
-                        "zume_languages" => __( "Zúme Languages", "dt_zume" ),
                     ]
                 ]
             );
