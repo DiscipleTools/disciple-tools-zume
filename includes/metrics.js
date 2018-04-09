@@ -4,9 +4,6 @@ jQuery(document).ready(function() {
     if('#zume_project' === window.location.hash) {
         show_zume_project()
     }
-    if('#zume_pipeline' === window.location.hash) {
-        show_zume_pipeline()
-    }
     if('#zume_locations' === window.location.hash) {
         show_zume_locations()
     }
@@ -186,8 +183,13 @@ function show_zume_groups(){
             </div>
             <div class="cell center">
             <hr>
-                <span class="section-subheader">Groups in Sessions</span>
+                <span class="section-subheader">Next Session for Groups</span>
                 <div id="groups-in-session" style="height: 400px;"></div>
+            </div>
+            <div class="cell center">
+            <hr>
+                <p class="section-subheader" >Sessions Completed by Groups</p>
+                <div id="sessions_completed_by_groups" style="height: 400px; "></div>
             </div>
             <div class="cell center">
             <hr>
@@ -209,6 +211,7 @@ function show_zume_groups(){
     google.charts.setOnLoadCallback(drawMembersPerGroup)
     google.charts.setOnLoadCallback(drawCurrentSessionChart)
     google.charts.setOnLoadCallback(drawWorld);
+    google.charts.setOnLoadCallback(drawSessionsCompleted)
 
     function drawMembersPerGroup() {
 
@@ -251,7 +254,8 @@ function show_zume_groups(){
                 title: 'session'
             },
             hAxis: {
-                title: 'numbers of groups'
+                title: 'number of groups at different stages',
+                scaleType: 'mirrorLog'
             },
             legend: {
                 position: 'none'
@@ -260,6 +264,29 @@ function show_zume_groups(){
         }
 
         let chart = new google.visualization.BarChart(document.getElementById('groups-in-session'));
+        chart.draw(data, options);
+    }
+
+    function drawSessionsCompleted() {
+        let data = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.sessions_completed_by_groups );
+        let options = {
+            bars: 'horizontal',
+            chartArea: {
+                left: '15%',
+                top: '0%',
+                width: "80%",
+                height: "90%" },
+            hAxis: {
+                scaleType: 'mirrorLog',
+                title: 'logarithmic scale'
+            },
+            legend: {
+                position: 'none'
+            },
+            colors: ['lightgreen'],
+        }
+
+        let chart = new google.visualization.BarChart(document.getElementById('sessions_completed_by_groups'));
         chart.draw(data, options);
     }
 
@@ -331,7 +358,7 @@ function show_zume_people(){
 
     google.charts.setOnLoadCallback(drawTable);
     google.charts.setOnLoadCallback(drawProgress);
-    google.charts.setOnLoadCallback(drawBarChart)
+    google.charts.setOnLoadCallback(drawLanguagesChart)
 
 
     function drawProgress() {
@@ -354,7 +381,7 @@ function show_zume_people(){
         chart.draw(data, options);
     }
 
-    function drawBarChart() {
+    function drawLanguagesChart() {
         let chartData = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.people_languages );
         let options = {
             bars: 'horizontal',
@@ -378,65 +405,6 @@ function show_zume_people(){
 
     chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
             <a onclick="refresh_stats_data( 'show_zume_project' ); jQuery('.spinner').show();">Refresh</a>
-            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
-            </div>`)
-}
-
-function show_zume_pipeline(){
-    "use strict";
-
-    let chartDiv = jQuery('#chart')
-
-    chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_pipeline +'</span>');
-
-    chartDiv.append(`
-        <div class="grid-x grid-padding-x grid-padding-y">
-            <div class="cell center">
-                <p class="section-subheader" >Sessions Completed by Groups</p>
-                <div id="sessions_completed_by_groups" style="height: 400px; "></div>
-            </div>
-            <div class="cell center">
-            <hr>
-                <p class="section-subheader">Pipeline Trends</p>
-                <div id="table_div"></div>
-            </div>
-        </div>
-    `)
-
-    google.charts.load('current', {packages: ['corechart', 'bar', 'table']});
-    google.charts.setOnLoadCallback(drawTable)
-    google.charts.setOnLoadCallback(drawSessionsCompleted)
-
-    function drawSessionsCompleted() {
-        let data = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.sessions_completed_by_groups );
-        let options = {
-            bars: 'horizontal',
-            chartArea: {
-                left: '15%',
-                top: '0%',
-                width: "80%",
-                height: "90%" },
-            hAxis: {
-                scaleType: 'mirrorLog',
-                title: 'logarithmic scale'
-            },
-            legend: {
-                position: 'none'
-            },
-        }
-
-        let chart = new google.visualization.BarChart(document.getElementById('sessions_completed_by_groups'));
-        chart.draw(data, options);
-    }
-
-    function drawTable() {
-        let data = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.pipeline_trends );
-        let table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-    }
-
-    chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
-            <a onclick="refresh_stats_data( 'show_zume_pipeline' ); jQuery('.spinner').show();">Refresh</a>
             <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
             </div>`)
 }
@@ -609,46 +577,6 @@ function show_zume_locations(){
             </div>`)
 }
 
-function show_zume_languages(){
-    "use strict";
-    let chartDiv = jQuery('#chart')
-
-    chartDiv.empty().html(`<span class="section-header">`+ wpApiZumeMetrics.translations.zume_languages +`</span>
-        <div class="grid-x grid-padding-x grid-padding-y">
-            <div class="cell center"><span class="section-subheader">Languages Used on Zúme Project.com</span></div>
-            <div class="cell center">
-                
-                <div id="people_languages" style="height: 500px; margin: 0 1em; "></div>
-            </div>
-        </div>
-        `)
-
-    google.charts.load('current', {packages: ['corechart', 'bar', 'table']});
-    google.charts.setOnLoadCallback(drawBarChart)
-    google.charts.setOnLoadCallback(drawChart)
-
-    function drawBarChart() {
-        let chartData = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.people_languages );
-        let options = {
-            bars: 'horizontal',
-            chartArea: {
-                left: '10%',
-                top: '10px',
-                width: "80%",
-                height: "90%" },
-            pieHole: 0.4,
-        }
-
-        let chart = new google.visualization.PieChart(document.getElementById('people_languages'));
-        chart.draw(chartData, options);
-    }
-
-    chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
-            <a onclick="refresh_stats_data( 'show_zume_languages' ); jQuery('.spinner').show();">Refresh</a>
-            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
-            </div>`)
-}
-
 function refresh_stats_data( page ){
     jQuery.ajax({
         type: "GET",
@@ -689,232 +617,3 @@ function refresh_stats_data( page ){
         })
 
 }
-
-function extra(){
-    "use strict";
-    let screenHeight = jQuery(window).height()
-    let chartHeight = screenHeight / 1.3
-    let chartDiv = jQuery('#chart')
-    chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_people +'</span>')
-
-    chartDiv.append(`
-        <div class="grid-x grid-padding-x">
-            <div class="cell">
-                <span id='colchart_diff_7' style='width: 47%; height: 350px; display: inline-block'></span>
-                <span id='colchart_diff_30' style='width: 47%; height: 350px; display: inline-block'></span>
-                <span id='colchart_diff_90' style='width: 47%; height: 350px; display: inline-block'></span>
-                <span id='colchart_diff_All' style='width: 47%; height: 350px; display: inline-block'></span>
-            </div>
-            <div class="cell">
-            <div id="progress_chart" style="width: 900px; height: 500px;"></div>
-            </div>
-            <div class="cell">
-            </div>
-            <div class="cell">
-            </div>
-            <div class="cell">
-            </div>
-            <div class="cell">
-            </div>
-            <div class="cell">
-            <div id="curve_chart" style="width: 100%; height: 500px"></div>
-            </div>
-            <div class="cell">
-            <div id="table_div"></div>
-            </div>
-        </div>
-        `)
-
-    google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
-
-    google.charts.setOnLoadCallback(drawTable);
-    google.charts.setOnLoadCallback(drawChart);
-    google.charts.setOnLoadCallback(drawLineChart);
-    google.charts.setOnLoadCallback(drawProgress);
-
-    function drawTable() {
-        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.project_overview);
-        let table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-    }
-
-    function drawChart() {
-
-        let projectOverview = wpApiZumeMetrics.zume_stats.project_overview
-
-        // 7 Day
-        var oldDataSplice7 = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(1,1)
-            temp.splice(2,5)
-            oldDataSplice7[index] = temp
-
-        })
-
-        var newDataSplice7 = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(2, 6)
-            newDataSplice7[index] = temp
-        })
-
-        let oldData7 = google.visualization.arrayToDataTable(oldDataSplice7);
-        let newData7 = google.visualization.arrayToDataTable(newDataSplice7);
-
-        let colChartDiff7 = new google.visualization.ColumnChart(document.getElementById('colchart_diff_7'));
-        colChartDiff7.draw(
-            colChartDiff7.computeDiff(oldData7, newData7),
-            { legend: { position: 'top' }, title: 'Last 7 Days' }
-        );
-
-        // 30 day
-        var oldDataSplice30 = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(1,3)
-            temp.splice(2,3)
-            oldDataSplice30[index] = temp
-
-        })
-
-        var newDataSplice30 = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(1, 2)
-            temp.splice(2,4)
-            newDataSplice30[index] = temp
-        })
-
-        let oldData30 = google.visualization.arrayToDataTable(oldDataSplice30);
-        let newData30 = google.visualization.arrayToDataTable(newDataSplice30);
-
-        let colChartDiff30 = new google.visualization.ColumnChart(document.getElementById('colchart_diff_30'));
-        colChartDiff30.draw(
-            colChartDiff30.computeDiff(oldData30, newData30),
-            { legend: { position: 'top' }, title: 'Last 30 Days' }
-        );
-
-        // 90 day
-        var oldDataSplice90 = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(1,5)
-            temp.splice(-1,1)
-            oldDataSplice90[index] = temp
-
-        })
-
-        var newDataSplice90 = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(1, 4)
-            temp.splice(2, 2)
-            newDataSplice90[index] = temp
-        })
-
-        let oldData90 = google.visualization.arrayToDataTable(oldDataSplice90);
-        let newData90 = google.visualization.arrayToDataTable(newDataSplice90);
-
-        let colChartDiff90 = new google.visualization.ColumnChart(document.getElementById('colchart_diff_90'));
-        colChartDiff90.draw(
-            colChartDiff90.computeDiff(oldData90, newData90),
-            { legend: { position: 'top' }, title: 'Last 90 Days' }
-        );
-
-        // All time
-        var oldDataSpliceAll = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(1,1)
-            temp.splice(2,5)
-            oldDataSpliceAll[index] = temp
-
-        })
-
-        var newDataSpliceAll = []
-        projectOverview.forEach(function(currentValue, index, arr){
-            let temp = currentValue.slice(0)
-            temp.splice(1, 6)
-            newDataSpliceAll[index] = temp
-        })
-
-        let oldDataAll = google.visualization.arrayToDataTable(oldDataSpliceAll);
-        let newDataAll = google.visualization.arrayToDataTable(newDataSpliceAll);
-
-        let colChartDiffAll = new google.visualization.ColumnChart(document.getElementById('colchart_diff_All'));
-        colChartDiffAll.draw(
-            colChartDiffAll.computeDiff(oldDataAll, newDataAll),
-            { legend: { position: 'top' }, title: 'Title' }
-        );
-
-    }
-
-    function drawProgress() {
-        // LINE CHART
-        var data = google.visualization.arrayToDataTable([
-            ['Month', 'New Trainees', 'New Groups', 'Sessions Completed', 'Courses Completed'],
-            ['Feb', 1000, 1000, 1000, 400],
-            ['Mar', 1000, 1000, 1000, 400],
-            ['Apr', 1000, 1000, 1000, 400],
-            ['May', 1000, 1000, 1000, 400],
-            ['Jun', 1000, 1000, 1000, 400],
-            ['Jul', 1000, 1000, 1000, 400],
-            ['Aug', 1000, 1000, 1000, 400],
-            ['Sep', 1000, 1000, 1000, 400],
-            ['Oct', 1000, 1000, 1000, 400],
-            ['Nov', 1000, 1000, 1000, 400],
-            ['Dec', 1000, 1000, 1000, 400],
-            ['Jan', 1000, 1000, 1000, 400],
-            ['Feb', 1170, 1170, 1170, 460],
-            ['Mar', 660, 660, 660, 1120],
-            ['Apr', 1030, 1030, 1030, 540]
-        ]);
-
-        var options = {
-            curveType: 'function',
-            legend: { position: 'bottom' }
-        };
-
-        var chart = new google.visualization.LineChart(document.getElementById('progress_chart'));
-
-        chart.draw(data, options);
-    }
-
-    function drawLineChart() {
-        // LINE CHART
-        var data = google.visualization.arrayToDataTable([
-            ['Month', 'New Trainees', 'New Groups', 'Sessions Completed', 'Course Completed'],
-            ['Feb', 1000, 1000, 1000, 400],
-            ['Mar', 1000, 1000, 1000, 400],
-            ['Apr', 1000, 1000, 1000, 400],
-            ['May', 1000, 1000, 1000, 400],
-            ['Jun', 1000, 1000, 1000, 400],
-            ['Jul', 1000, 1000, 1000, 400],
-            ['Aug', 1000, 1000, 1000, 400],
-            ['Sep', 1000, 1000, 1000, 400],
-            ['Oct', 1000, 1000, 1000, 400],
-            ['Nov', 1000, 1000, 1000, 400],
-            ['Dec', 1000, 1000, 1000, 400],
-            ['Jan', 1000, 1000, 1000, 400],
-            ['Feb', 1170, 1170, 1170, 460],
-            ['Mar', 660, 660, 660, 1120],
-            ['Apr', 1030, 1030, 1030, 540]
-        ]);
-
-        var options = {
-            title: 'Project Progress',
-            curveType: 'function',
-            legend: { position: 'bottom' }
-        };
-
-        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-
-        chart.draw(data, options);
-    }
-
-    chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
-            <a onclick="refresh_stats_data( 'show_zume_project' ); jQuery('.spinner').show();">Refresh</a>
-            <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
-            </div>`)
-} // @todo delete after dev
