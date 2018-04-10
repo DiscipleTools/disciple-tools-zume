@@ -260,13 +260,14 @@ class DT_Zume_Core_Endpoints
             ],
             "sources" => [
                 "values" => [
-                    [ "value" => "zume" ],
+                    [ "value" => "Zume" ],
                 ],
                 "force_values" => false
             ]
         ];
 
         // @todo lookup or create location connection
+
 
         if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
             $phone = $user_data['zume_phone_number'] ?? '';
@@ -291,6 +292,78 @@ class DT_Zume_Core_Endpoints
         ];
 
         return $fields;
+    }
+
+    public function build_location_from_raw_info( $raw_location = null, $address = null, $raw_location_from_ip = null, $address_from_ip = null ) {
+        $result = Zume_Google_Geolocation::query_google_api( 'MANOUBA, Tunis 2010, Tunisia', 'core' );
+
+        $location = [
+            'neighborhood' => '',
+            'locality' => '',
+            'admin_2' => '',
+            'admin_1' => '',
+            'country' => '',
+        ];
+
+        // check for nulls and build array for searching
+        if ( ! is_null( $raw_location ) && isset( $raw_location['status'] ) && ( 'OK' == $raw_location['status'] ?? ''  ) ) {
+            $address_components = $raw_location['results'][0]['address_components'];
+            foreach( $address_components as $address_component ) {
+                if ( 'neighborhood' == $address_component['types'][0] ) {
+                    $location['neighborhood'] = $address_component['long_name'];
+                }
+                if ( 'locality' == $address_component['types'][0] ) {
+                    $location['locality'] = $address_component['long_name'];
+                }
+                if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
+                    $location['admin_2'] = $address_component['long_name'];
+                }
+                if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
+                    $location['admin_1'] = $address_component['long_name'];
+                }
+                if ( 'country' == $address_component['types'][0] ) {
+                    $location['country'] = $address_component['long_name'];
+                }
+            }
+        }
+        elseif ( ! is_null( $address ) ) {
+
+        }
+        elseif ( ! is_null( $raw_location_from_ip ) ) {
+
+        }
+        elseif ( ! is_null( $address_from_ip ) ) {
+
+        }
+
+
+        // lookup location
+        
+
+
+        if ( isset( $result['raw']['status'] ) && ( 'OK' == $result['raw']['status'] ?? ''  ) ) {
+            $address_components = $result['raw']['results'][0]['address_components'];
+            foreach( $address_components as $address_component ) {
+                if ( 'neighborhood' == $address_component['types'][0] ) {
+                    $location['neighborhood'] = $address_component['long_name'];
+                }
+                if ( 'locality' == $address_component['types'][0] ) {
+                    $location['locality'] = $address_component['long_name'];
+                }
+                if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
+                    $location['admin_2'] = $address_component['long_name'];
+                }
+                if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
+                    $location['admin_1'] = $address_component['long_name'];
+                }
+                if ( 'country' == $address_component['types'][0] ) {
+                    $location['country'] = $address_component['long_name'];
+                }
+            }
+            $location['result'] =  $result;
+
+            return $location;
+        }
     }
 
     public function build_group_record_array( $raw_record, $owner_post_id ) {
