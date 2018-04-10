@@ -254,11 +254,19 @@ class DT_Zume_Core_Endpoints
     public function build_dt_contact_record_array( $user_data ) {
         // Build new DT record data
         $fields = [
-        'title' => $user_data['title'],
-        "contact_email" => [
-        [ "value" => $user_data['user_email'] ],
-        ]
+            'title' => $user_data['title'],
+            "contact_email" => [
+                [ "value" => $user_data['user_email'] ],
+            ],
+            "sources" => [
+                "values" => [
+                    [ "value" => "zume" ],
+                ],
+                "force_values" => false
+            ]
         ];
+
+        // @todo lookup or create location connection
 
         if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
             $phone = $user_data['zume_phone_number'] ?? '';
@@ -294,9 +302,9 @@ class DT_Zume_Core_Endpoints
             "created_from_contact_id" => $owner_post_id,
         ];
 
-        if ( ! empty( $raw_record['adddress'] ) ) {
+        if ( ! empty( $raw_record['address'] ) || ! empty( $raw_record['ip_address'] ) ) {
             $fields["contact_address"] = [
-                [ "value" => $raw_record['adddress'] ]
+                [ "value" => sanitize_text_field( wp_unslash( $raw_record['address'] ?: $raw_record['ip_address'] ) ) ]
             ];
         }
 

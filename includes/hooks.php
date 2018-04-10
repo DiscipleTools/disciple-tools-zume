@@ -72,7 +72,6 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                 <!-- Sessions Tab -->
                 <div class="tabs-panel is-active" id="info" style="min-height: 375px;">
                     <dl>
-
                         <dt>
                             <?php esc_html_e( 'Three Month Plan' ) ?>:
                         </dt>
@@ -89,6 +88,17 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                             <dd>
                                 <?php echo esc_attr( $mdy ) ?>
                             </dd>
+                    <?php endif; ?>
+
+                    <?php if ( isset( $record['last_activity'] ) && ! empty( $record['last_activity'] ) ) :
+                        $mdy = DateTime::createFromFormat( 'Y-m-d H:i:s', $record['last_activity'] )->format( 'm/d/Y' );
+                        ?>
+                        <dt>
+                            <?php esc_html_e( 'Last Active on Zúme' ) ?>:
+                        </dt>
+                        <dd>
+                            <?php echo esc_attr( $mdy ) ?>
+                        </dd>
                     <?php endif; ?>
 
                     <?php if ( isset( $record['zume_groups'] ) && ! empty( $record['zume_groups'] ) ) : ?>
@@ -222,20 +232,55 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
             <div class="tabs-content" data-tabs-content="zume-tabs">
                 <!-- Sessions Tab -->
                 <div class="tabs-panel is-active" id="sessions">
+                    <style>
+                        .date-text {
+                            font-size:.8em;
+                        }
+                    </style>
                     <?php
                     if ( $record ) { ?>
 
                         <!-- sessions -->
-                        <button class="button <?php echo esc_html( $record['session_1'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 1' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_2'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 2' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_3'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 3' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_4'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 4' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_5'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 5' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_6'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 6' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_7'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 7' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_8'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 8' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_9'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 9' ) ?></button>
-                        <button class="button <?php echo esc_html( $record['session_10'] ? 'success' : 'hollow' ) ?> expanded" type="button"><?php echo esc_html( 'Session 10' ) ?></button>
+                        <button class="button <?php echo esc_html( $record['session_1'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 1' ) ?></strong>
+                            <?php echo  $record['session_1_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_1_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_2'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 2' ) ?></strong>
+                            <?php echo  $record['session_2_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_2_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_3'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 3' ) ?></strong>
+                            <?php echo  $record['session_3_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_3_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_4'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 4' ) ?></strong>
+                            <?php echo  $record['session_4_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_4_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_5'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 5' ) ?></strong>
+                            <?php echo  $record['session_5_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_5_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_6'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 6' ) ?></strong>
+                            <?php echo  $record['session_6_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_6_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_7'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 7' ) ?></strong>
+                            <?php echo  $record['session_7_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_7_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_8'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 8' ) ?></strong>
+                            <?php echo  $record['session_8_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_8_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_9'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 9' ) ?></strong>
+                            <?php echo  $record['session_9_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_9_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
+                        <button class="button <?php echo esc_html( $record['session_10'] ? 'success' : 'hollow' ) ?> expanded" type="button">
+                            <strong><?php echo esc_html( 'Session 10' ) ?></strong>
+                            <?php echo  $record['session_10_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_10_complete']  ) ) ) . '</span>' : ''  ?>
+                        </button>
 
                     <?php } // endif ?>
                 </div>
