@@ -295,7 +295,7 @@ class DT_Zume_Core_Endpoints
     }
 
     public function build_location_from_raw_info( $raw_location = null, $address = null, $raw_location_from_ip = null, $address_from_ip = null ) {
-        $result = Zume_Google_Geolocation::query_google_api( 'MANOUBA, Tunis 2010, Tunisia', 'core' );
+
 
         $location = [
             'neighborhood' => '',
@@ -307,27 +307,42 @@ class DT_Zume_Core_Endpoints
 
         // check for nulls and build array for searching
         if ( ! is_null( $raw_location ) && isset( $raw_location['status'] ) && ( 'OK' == $raw_location['status'] ?? ''  ) ) {
+            $location = [];
+            $level1 = '';
+            $level2 = '';
+
             $address_components = $raw_location['results'][0]['address_components'];
             foreach( $address_components as $address_component ) {
                 if ( 'neighborhood' == $address_component['types'][0] ) {
                     $location['neighborhood'] = $address_component['long_name'];
+                    $level2 .= $location['neighborhood'] . ', ';
                 }
                 if ( 'locality' == $address_component['types'][0] ) {
                     $location['locality'] = $address_component['long_name'];
+                    $level2 .= $location['locality'] . ', ';
                 }
                 if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
                     $location['admin_2'] = $address_component['long_name'];
+                    $level2 .= $location['admin_2'] . ', ';
                 }
                 if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
                     $location['admin_1'] = $address_component['long_name'];
+                    $level1 .= $location['admin_1'] . ', ';
                 }
                 if ( 'country' == $address_component['types'][0] ) {
                     $location['country'] = $address_component['long_name'];
+                    $level1 .= $location['country'];
                 }
+                $level1 = rtrim( $level1, ',' );
             }
+
+            $level2 = substr( $level2, 0, -2 );
+
+            $location['level2'] = $level2;
+            $location['level1'] = $level1;
         }
         elseif ( ! is_null( $address ) ) {
-
+            $result = Disciple_Tools_Google_Geocode_API::query_google_api( 'MANOUBA, Tunis 2010, Tunisia', 'core' );
         }
         elseif ( ! is_null( $raw_location_from_ip ) ) {
 
@@ -336,9 +351,6 @@ class DT_Zume_Core_Endpoints
 
         }
 
-
-        // lookup location
-        
 
 
         if ( isset( $result['raw']['status'] ) && ( 'OK' == $result['raw']['status'] ?? ''  ) ) {
