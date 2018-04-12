@@ -294,88 +294,130 @@ class DT_Zume_Core_Endpoints
         return $fields;
     }
 
-    public function build_location_from_raw_info( $raw_location = null, $address = null, $raw_location_from_ip = null, $address_from_ip = null ) {
+    /**
+     * @param        $location_data
+     * @param string $type
+     *
+     * @return array|\WP_Error
+     */
+    public function build_location_from_raw_info( $location_data, $type = 'google_result' ) {
 
-
-        $location = [
-            'neighborhood' => '',
-            'locality' => '',
-            'admin_2' => '',
-            'admin_1' => '',
-            'country' => '',
-        ];
+        $address_components = [];
+        $raw_google_response = [];
 
         // check for nulls and build array for searching
-        if ( ! is_null( $raw_location ) && isset( $raw_location['status'] ) && ( 'OK' == $raw_location['status'] ?? ''  ) ) {
-            $location = [];
-            $level1 = '';
-            $level2 = '';
+        switch ( $type ) {
+            case 'google_result': // this is a raw google geocoding result
+                if ( ! is_null( $location_data ) && isset( $location_data['status'] ) && ( 'OK' == $location_data['status'] ?? ''  ) ) {
+                    $address_components = $location_data['results'][0]['address_components'];
+                    $raw_google_response = $location_data;
+                }
+                break;
+            case 'address':
+                if ( ! empty( $location_data ) ) {
+                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $location_data );
+                    if ( $result ) {
+                        $address_components = $result['results'][0]['address_components'];
+                        $raw_google_response = $result;
+                    }
+                }
+                break;
+            case 'ip_address':
+                // @todo reverse geocode from lng/lat
+                /** @link https://developers.google.com/maps/documentation/geocoding/intro#ReverseGeocoding */
+                break;
+            case 'lng_lat':
+                // @todo lookup ip address, then reverse geocode from lng/lat of ip address
+                break;
+            default:
+                break;
+        }
 
-            $address_components = $raw_location['results'][0]['address_components'];
-            foreach( $address_components as $address_component ) {
-                if ( 'neighborhood' == $address_component['types'][0] ) {
-                    $location['neighborhood'] = $address_component['long_name'];
-                    $level2 .= $location['neighborhood'] . ', ';
-                }
-                if ( 'locality' == $address_component['types'][0] ) {
-                    $location['locality'] = $address_component['long_name'];
-                    $level2 .= $location['locality'] . ', ';
-                }
-                if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
-                    $location['admin_2'] = $address_component['long_name'];
-                    $level2 .= $location['admin_2'] . ', ';
-                }
-                if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
-                    $location['admin_1'] = $address_component['long_name'];
-                    $level1 .= $location['admin_1'] . ', ';
-                }
-                if ( 'country' == $address_component['types'][0] ) {
-                    $location['country'] = $address_component['long_name'];
-                    $level1 .= $location['country'];
-                }
-                $level1 = rtrim( $level1, ',' );
+        if ( empty( $address_components ) ) {
+            dt_write_log( new WP_Error(__METHOD__, 'No valid address components') );
+            dt_write_log( $address_components );
+            return new WP_Error(__METHOD__, 'No valid address components');
+        }
+
+        $location = [];
+        $level1 = '';
+        $level2 = '';
+
+        foreach( $address_components as $address_component ) {
+            if ( 'neighborhood' == $address_component['types'][0] ) {
+                $location['neighborhood'] = $address_component['long_name'];
+                $level2 .= $location['neighborhood'] . ', ';
             }
-
-            $level2 = substr( $level2, 0, -2 );
-
-            $location['level2'] = $level2;
-            $location['level1'] = $level1;
-        }
-        elseif ( ! is_null( $address ) ) {
-            $result = Disciple_Tools_Google_Geocode_API::query_google_api( 'MANOUBA, Tunis 2010, Tunisia', 'core' );
-        }
-        elseif ( ! is_null( $raw_location_from_ip ) ) {
-
-        }
-        elseif ( ! is_null( $address_from_ip ) ) {
-
-        }
-
-
-
-        if ( isset( $result['raw']['status'] ) && ( 'OK' == $result['raw']['status'] ?? ''  ) ) {
-            $address_components = $result['raw']['results'][0]['address_components'];
-            foreach( $address_components as $address_component ) {
-                if ( 'neighborhood' == $address_component['types'][0] ) {
-                    $location['neighborhood'] = $address_component['long_name'];
-                }
-                if ( 'locality' == $address_component['types'][0] ) {
-                    $location['locality'] = $address_component['long_name'];
-                }
-                if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
-                    $location['admin_2'] = $address_component['long_name'];
-                }
-                if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
-                    $location['admin_1'] = $address_component['long_name'];
-                }
-                if ( 'country' == $address_component['types'][0] ) {
-                    $location['country'] = $address_component['long_name'];
-                }
+            if ( 'locality' == $address_component['types'][0] ) {
+                $location['locality'] = $address_component['long_name'];
+                $level2 .= $location['locality'] . ', ';
             }
-            $location['result'] =  $result;
-
-            return $location;
+            if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
+                $location['admin_2'] = $address_component['long_name'];
+                $level2 .= $location['admin_2'] . ', ';
+            }
+            if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
+                $location['admin_1'] = $address_component['long_name'];
+                $level1 .= $location['admin_1'] . ', ';
+            }
+            if ( 'country' == $address_component['types'][0] ) {
+                $location['country'] = $address_component['long_name'];
+                $level1 .= $location['country'];
+            }
+            $level1 = rtrim( $level1, ',' );
         }
+
+        $level2 = substr( $level2, 0, -2 );
+
+        $location['level2'] = $level2;
+        $location['level1'] = $level1;
+        $location['raw'] = $raw_google_response;
+
+        return $location;
+    }
+
+    public function find_or_add_location( $location ) {
+        // expects $location to be prepared by $this->build_location_from_raw_info
+
+        // first find level 1 record or create it
+        if ( ! isset( $location['level1'] ) ) {
+            return false;
+        }
+        $level_1 = get_page_by_title( $location['level1'], ARRAY_A, 'locations' );
+        if ( ! $level_1 ) {
+            // create post
+            $fields = [
+                'post_title' => wp_strip_all_tags( $location['level1'] ),
+                'post_parent' => '',
+                'post_type'   => "locations",
+                "post_status" => 'publish',
+                'meta_input'  => [
+                    'location' => $location['raw'],
+                    'lat' => '',
+                    'lng' => '',
+                    'northeast_lat' => '',
+                    'northeast_lng' => '',
+                    'southwest_lat' => '',
+                    'southwest_lng' => '',
+                ],
+            ];
+
+            $level_1 = Disciple_Tools_Locations::create_location( $fields, false );
+        }
+
+        // second find level 2 record or create it.
+        if ( ! isset( $location['level2'] ) ) {
+            return false;
+        }
+        $level_2 = get_page_by_title( $location['level2'], ARRAY_A, 'locations' );
+        if ( ! $level_2 ) {
+            // create post @todo
+
+        }
+
+        // return location post id
+        return $level_2;
+
     }
 
     public function build_group_record_array( $raw_record, $owner_post_id ) {

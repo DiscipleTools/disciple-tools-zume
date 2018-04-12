@@ -129,6 +129,7 @@ class DT_Zume_Menu
         // Runs validation of the database when page is loaded.
         $this->site_default_metabox();
         $this->raw_data_retrieval_test();
+        $this->function_test();
 
         // begin right column template
         $this->template( 'right_column' );
@@ -346,6 +347,56 @@ class DT_Zume_Menu
             <?php if ( ! empty( $error ) ) {
                 print_r( $error );
 }
+            ?>
+
+        </form>
+        <?php
+    }
+
+    public static function function_test()
+    {
+        $report = [];
+        // Check for post
+        if ( isset( $_POST['dt_zume_test_nonce'] ) && ! empty( $_POST['dt_zume_test_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_zume_test_nonce'] ) ), 'dt_zume_test'. get_current_user_id() ) ) {
+            if ( isset( $_POST['dt_zume_test'] ) && ! empty( $_POST['dt_zume_test'] ) ) {
+
+                $result = Disciple_Tools_Google_Geocode_API::query_google_api( 'Cercado de Lima 15046, Peru' );
+                $report = DT_Zume_Core_Endpoints::instance()->build_location_from_raw_info( $result, 'google_result');
+                $data = DT_Zume_Core_Endpoints::instance()->find_or_add_location( $report );
+
+                Disciple_Tools_Google
+                dt_write_log( $report );
+            }
+        }
+
+        ?>
+        <form method="post" action="">
+            <?php wp_nonce_field( 'dt_zume_test'. get_current_user_id(), 'dt_zume_test_nonce', false, true ) ?>
+
+            <!-- Box -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <td>
+                        <?php esc_html_e( 'Function Test (Dev)' ) ?>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr>
+                    <td>
+                        <button class="button" name="dt_zume_test" value="1" type="submit"><?php esc_html_e( 'Test' ) ?></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <!-- End Box -->
+
+            <?php if ( ! empty( $report ) ) {
+//                print_r( $report );
+            }
             ?>
 
         </form>
