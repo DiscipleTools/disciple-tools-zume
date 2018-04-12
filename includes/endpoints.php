@@ -266,8 +266,16 @@ class DT_Zume_Core_Endpoints
             ]
         ];
 
-        // @todo lookup or create location connection
-
+        // get or create location
+        $location_post_id = $this->parse_raw_user_record_for_location_id( $user_data );
+        if ( $location_post_id ) {
+            $fields['locations'] = [
+                "values" => [
+                    [ "value" => $location_post_id ],
+                ],
+                "force_values" => false,
+            ];
+        }
 
         if ( !empty( $user_data['zume_phone_number'] ) ) { // add phone
             $phone = $user_data['zume_phone_number'] ?? '';
@@ -376,8 +384,92 @@ class DT_Zume_Core_Endpoints
         return $location;
     }
 
+    public function parse_raw_user_record_for_location_id( $raw_user_record ) {
+
+        $raw_result_data = false;
+        // if get valid raw location data
+        // else get valid location components
+            // if valid location components, get raw location response
+        // else return no location id
+
+
+        // parse valid location data for location components
+        if( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
+            return false;
+        }
+
+        $post_id = false;
+        // @todo note overwrite the $post_id at each check down the chain, so all is created in parent order, but returns post_id
+
+        // check for country location post_id, or create country location post_id
+        // check for admin1 location post_id with country parent_id, or create admin1 post_id
+        // check for admin2 location post_id with country parent_id, or create admin1 post_id
+        // check for admin3 location post_id with country parent_id, or create admin1 post_id
+        // check for admin4 location post_id with country parent_id, or create admin1 post_id
+        // check for locality location post_id with country parent_id, or create admin1 post_id
+        // check for neighborhood location post_id with country parent_id, or create admin1 post_id
+
+        return $post_id;
+    }
+
+    public function parse_raw_group_record_for_location_id ( $raw_group_record ) {
+        $raw_result_data = false;
+        // if get valid raw location data
+        // else get valid location components
+        // if valid location components, get raw location response
+        // else return no location id
+
+
+        // parse valid location data for location components
+        if( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
+            return false;
+        }
+
+        $post_id = false;
+        // @todo note overwrite the $post_id at each check down the chain, so all is created in parent order, but returns post_id
+
+        // check for country location post_id, or create country location post_id
+        // check for admin1 location post_id with country parent_id, or create admin1 post_id
+        // check for admin2 location post_id with country parent_id, or create admin1 post_id
+        // check for admin3 location post_id with country parent_id, or create admin1 post_id
+        // check for admin4 location post_id with country parent_id, or create admin1 post_id
+        // check for locality location post_id with country parent_id, or create admin1 post_id
+        // check for neighborhood location post_id with country parent_id, or create admin1 post_id
+
+        return $post_id;
+    }
+
+    /**
+     * @param $raw_user_record
+     *
+     * @return bool|array
+     */
+    public function get_raw_result_from_user_data( $raw_user_record ) {
+        $valid_record = [];
+
+        // cascade/overwrite the retrieval. ip location is less accurate than user provided.
+        if ( ! empty( $raw_user_record['zume_raw_location_from_ip'] ) )  {
+            if ( Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_user_record['zume_raw_location_from_ip'] ) ) {
+                $valid_record = $raw_user_record['zume_raw_location'];
+            }
+        }
+
+        if ( ! empty( $raw_user_record['zume_raw_location'] ) ) {
+            if ( Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_user_record['zume_raw_location'] ) ) {
+                $valid_record = $raw_user_record['zume_raw_location'];
+            }
+        }
+
+        if ( empty( $valid_record ) ){
+            return false;
+        } else {
+            return $valid_record;
+        }
+    }
+
     public function find_or_add_location( $location ) {
         // expects $location to be prepared by $this->build_location_from_raw_info
+
 
         // first find level 1 record or create it
         if ( ! isset( $location['level1'] ) ) {
@@ -437,6 +529,17 @@ class DT_Zume_Core_Endpoints
 
         if ( ! empty( $raw_record['created_date'] ) ){
             $fields["start_date"] = substr( $raw_record['created_date'], 0, 10 );
+        }
+
+        // get or build location
+        $location_post_id = $this->parse_raw_user_record_for_location_id( $raw_record );
+        if ( $location_post_id ) {
+            $fields['locations'] = [
+                "values" => [
+                    [ "value" => $location_post_id ],
+                ],
+                "force_values" => false,
+            ];
         }
 
         return $fields;

@@ -128,8 +128,9 @@ class DT_Zume_Menu
 
         // Runs validation of the database when page is loaded.
         $this->site_default_metabox();
-        $this->raw_data_retrieval_test();
-        $this->function_test();
+        $this->select_location_levels_to_record();
+//        $this->raw_data_retrieval_test();
+//        $this->function_test();
 
         // begin right column template
         $this->template( 'right_column' );
@@ -353,6 +354,88 @@ class DT_Zume_Menu
         <?php
     }
 
+    public static function admin_levels_array() {
+        // @note Changes here might need to be reflected in the activation() in disciple-tools-zume.php
+        return [
+            'country' => 'Country (recommended)',
+            'administrative_area_level_1' => 'Admin Level 1 (ex. state / province) (recommended)',
+            'administrative_area_level_2' => 'Admin Level 2',
+            'administrative_area_level_3' => 'Admin Level 3',
+            'administrative_area_level_4' => 'Admin Level 4',
+            'locality' => 'Locality (ex. city name) (recommended)',
+            'neighborhood' => 'Neighborhood' ];
+    }
+
+    public static function select_location_levels_to_record()
+    {
+        $list_array = self::admin_levels_array();
+        $settings = get_option('dt_zume_selected_location_levels');
+
+        // Check for post
+        if ( isset( $_POST['dt_zume_select_levels_nonce'] ) && ! empty( $_POST['dt_zume_select_levels_nonce'] )
+            && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_zume_select_levels_nonce'] ) ), 'dt_zume_select_levels'. get_current_user_id() ) ) {
+
+            unset( $_POST['dt_zume_select_levels_nonce'] );
+
+            foreach ( array_keys( $list_array ) as $key ) {
+                if ( isset( $_POST[$key] ) ) {
+                    $settings[$key] = 1;
+                } else {
+                    $settings[$key] = 0;
+                }
+            }
+            
+            dt_write_log($settings);
+            update_option('dt_zume_selected_location_levels', $settings, false );
+        }
+
+
+        ?>
+        <form method="post" action="">
+            <?php wp_nonce_field( 'dt_zume_select_levels'. get_current_user_id(), 'dt_zume_select_levels_nonce', false, true ) ?>
+
+            <!-- Box -->
+            <table class="widefat striped">
+                <thead>
+                <tr>
+                    <td colspan="2">
+                        <?php esc_html_e( 'Select Levels for Auto Building Locations' ) ?>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+
+                <?php
+
+                foreach( $list_array as $item => $label ) : ?>
+                    <tr>
+                        <td>
+                            <label for="<?php echo esc_attr( $item ) ?>"><?php echo esc_attr( $label ) ?></label>
+                        </td>
+                        <td>
+                            <input type="checkbox" value="1" id="<?php echo esc_attr( $item ) ?>" name="<?php echo esc_html( $item ) ?>"
+                            <?php  isset( $settings[$item] ) && $settings[$item] == 1  ? print esc_html('checked' ) : print '' ?>
+                            />
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+
+                <tr>
+                    <td colspan="2">
+                        <button class="button" type="submit"><?php esc_html_e( 'Select Levels for Locations Integration' ) ?></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <!-- End Box -->
+
+
+
+        </form>
+        <?php
+    }
+
     public static function function_test()
     {
         $report = [];
@@ -360,11 +443,23 @@ class DT_Zume_Menu
         if ( isset( $_POST['dt_zume_test_nonce'] ) && ! empty( $_POST['dt_zume_test_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_zume_test_nonce'] ) ), 'dt_zume_test'. get_current_user_id() ) ) {
             if ( isset( $_POST['dt_zume_test'] ) && ! empty( $_POST['dt_zume_test'] ) ) {
 
-                $result = Disciple_Tools_Google_Geocode_API::query_google_api( 'Cercado de Lima 15046, Peru' );
-//                $report = DT_Zume_Core_Endpoints::instance()->build_location_from_raw_info( $result, 'google_result');
+//                delete_transient('sample_google_response');
+
+                if ( get_transient('sample_google_response') && empty( $_POST['address'] ) ) {
+                    $raw = maybe_unserialize( get_transient('sample_google_response') );
+                    dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw, $_POST['item'] ?? 'full' ) );
+                } else {
+                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $_POST['address'] ?: 'Highlands Ranch, CO 80126');
+                    set_transient('sample_google_response', $result, 3600 );
+                    dt_write_log( 'new transient set' );
+                    $raw = maybe_unserialize( get_transient('sample_google_response') );
+                    dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw, 'full' ) );
+                }
+
+
+                //                $report = DT_Zume_Core_Endpoints::instance()->build_location_from_raw_info( $result, 'google_result');
 //                $data = DT_Zume_Core_Endpoints::instance()->find_or_add_location( $report );
 
-                dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $result ) );
             }
         }
 
@@ -385,7 +480,24 @@ class DT_Zume_Menu
 
                 <tr>
                     <td>
+                        <label for="address">Address</label>
+                        <input type="text" value="" id="address" name="address" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="item">Item</label>
+                        <input type="text" value="" id="item" name="item" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <button class="button" name="dt_zume_test" value="1" type="submit"><?php esc_html_e( 'Test' ) ?></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <?php print '<pre>'; print_r($raw ?? '' )  ?>
                     </td>
                 </tr>
                 </tbody>
@@ -393,10 +505,7 @@ class DT_Zume_Menu
             <br>
             <!-- End Box -->
 
-            <?php if ( ! empty( $report ) ) {
-//                print_r( $report );
-}
-            ?>
+
 
         </form>
         <?php

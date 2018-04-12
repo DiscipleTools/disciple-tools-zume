@@ -143,13 +143,18 @@ class DT_Zume {
      * @return void
      */
     public static function activation() {
-        $template = get_option( 'template' );
-        switch ( $template ) {
-            case 'disciple-tools-theme':
-                break;
-            default: // if no option exists, then the plugin is forced to selection screen.
-                break;
+
+        // install default array for selected location levels
+        require_once( 'includes/menu-and-tabs.php' );
+        $list_array = DT_Zume_Menu::admin_levels_array();
+        foreach ( array_keys( $list_array ) as $key ) {
+            if ( 'country' == $key || 'administrative_area_level_1' == $key || 'locality' == $key ) {
+                $settings[$key] = 1;
+            } else {
+                $settings[$key] = 0;
+            }
         }
+        update_option('dt_zume_selected_location_levels', $settings, false );
     }
 
     /**
@@ -161,6 +166,7 @@ class DT_Zume {
      */
     public static function deactivation() {
         Site_Link_System::deactivate(); // Remove site link keys
+        delete_option('dt_zume_selected_location_levels');
     }
 
     /**
