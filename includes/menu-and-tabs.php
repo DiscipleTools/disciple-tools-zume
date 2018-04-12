@@ -361,11 +361,10 @@ class DT_Zume_Menu
             if ( isset( $_POST['dt_zume_test'] ) && ! empty( $_POST['dt_zume_test'] ) ) {
 
                 $result = Disciple_Tools_Google_Geocode_API::query_google_api( 'Cercado de Lima 15046, Peru' );
-                $report = DT_Zume_Core_Endpoints::instance()->build_location_from_raw_info( $result, 'google_result');
-                $data = DT_Zume_Core_Endpoints::instance()->find_or_add_location( $report );
+//                $report = DT_Zume_Core_Endpoints::instance()->build_location_from_raw_info( $result, 'google_result');
+//                $data = DT_Zume_Core_Endpoints::instance()->find_or_add_location( $report );
 
-                Disciple_Tools_Google
-                dt_write_log( $report );
+                dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result($result) );
             }
         }
 
