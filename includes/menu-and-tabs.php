@@ -364,7 +364,7 @@ class DT_Zume_Menu
 //                $report = DT_Zume_Core_Endpoints::instance()->build_location_from_raw_info( $result, 'google_result');
 //                $data = DT_Zume_Core_Endpoints::instance()->find_or_add_location( $report );
 
-                dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result($result) );
+                dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $result ) );
             }
         }
 
@@ -395,7 +395,7 @@ class DT_Zume_Menu
 
             <?php if ( ! empty( $report ) ) {
 //                print_r( $report );
-            }
+}
             ?>
 
         </form>

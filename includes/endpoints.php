@@ -334,16 +334,16 @@ class DT_Zume_Core_Endpoints
         }
 
         if ( empty( $address_components ) ) {
-            dt_write_log( new WP_Error(__METHOD__, 'No valid address components') );
+            dt_write_log( new WP_Error( __METHOD__, 'No valid address components' ) );
             dt_write_log( $address_components );
-            return new WP_Error(__METHOD__, 'No valid address components');
+            return new WP_Error( __METHOD__, 'No valid address components' );
         }
 
         $location = [];
         $level1 = '';
         $level2 = '';
 
-        foreach( $address_components as $address_component ) {
+        foreach ( $address_components as $address_component ) {
             if ( 'neighborhood' == $address_component['types'][0] ) {
                 $location['neighborhood'] = $address_component['long_name'];
                 $level2 .= $location['neighborhood'] . ', ';
