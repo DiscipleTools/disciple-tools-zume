@@ -154,7 +154,7 @@ class DT_Zume {
                 $settings[$key] = 0;
             }
         }
-        update_option('dt_zume_selected_location_levels', $settings, false );
+        update_option( 'dt_zume_selected_location_levels', $settings, false );
     }
 
     /**
@@ -166,7 +166,7 @@ class DT_Zume {
      */
     public static function deactivation() {
         Site_Link_System::deactivate(); // Remove site link keys
-        delete_option('dt_zume_selected_location_levels');
+        delete_option( 'dt_zume_selected_location_levels' );
     }
 
     /**

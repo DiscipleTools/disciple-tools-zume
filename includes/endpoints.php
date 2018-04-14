@@ -394,7 +394,7 @@ class DT_Zume_Core_Endpoints
 
 
         // parse valid location data for location components
-        if( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
+        if ( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
             return false;
         }
 
@@ -412,7 +412,7 @@ class DT_Zume_Core_Endpoints
         return $post_id;
     }
 
-    public function parse_raw_group_record_for_location_id ( $raw_group_record ) {
+    public function parse_raw_group_record_for_location_id( $raw_group_record ) {
         $raw_result_data = false;
         // if get valid raw location data
         // else get valid location components
@@ -421,7 +421,7 @@ class DT_Zume_Core_Endpoints
 
 
         // parse valid location data for location components
-        if( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
+        if ( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
             return false;
         }
 
@@ -448,7 +448,7 @@ class DT_Zume_Core_Endpoints
         $valid_record = [];
 
         // cascade/overwrite the retrieval. ip location is less accurate than user provided.
-        if ( ! empty( $raw_user_record['zume_raw_location_from_ip'] ) )  {
+        if ( ! empty( $raw_user_record['zume_raw_location_from_ip'] ) ) {
             if ( Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_user_record['zume_raw_location_from_ip'] ) ) {
                 $valid_record = $raw_user_record['zume_raw_location'];
             }

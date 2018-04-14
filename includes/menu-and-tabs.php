@@ -319,14 +319,14 @@ class DT_Zume_Menu
 
 //                delete_transient('sample_google_response');
 
-                if ( get_transient('sample_google_response') && empty( $_POST['address'] ) ) {
-                    $raw = maybe_unserialize( get_transient('sample_google_response') );
+                if ( get_transient( 'sample_google_response' ) && empty( $_POST['address'] ) ) {
+                    $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
                     dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw, $_POST['item'] ?? 'full' ) );
                 } else {
-                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $_POST['address'] ?: 'Highlands Ranch, CO 80126');
-                    set_transient('sample_google_response', $result, 3600 );
+                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $_POST['address'] ?: 'Highlands Ranch, CO 80126' );
+                    set_transient( 'sample_google_response', $result, 3600 );
                     dt_write_log( 'new transient set' );
-                    $raw = maybe_unserialize( get_transient('sample_google_response') );
+                    $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
                     dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw, 'full' ) );
                 }
 
@@ -371,7 +371,7 @@ class DT_Zume_Menu
                 </tr>
                 <tr>
                     <td>
-                        <?php print '<pre>'; print_r($raw ?? '' )  ?>
+                        <?php print '<pre>'; print_r( $raw ?? '' )  ?>
                     </td>
                 </tr>
                 </tbody>
@@ -423,13 +423,13 @@ class DT_Zume_Menu
                         <!-- Main Column -->
                         <?php
                         break;
-                case 'right_column':
-                    ?>
-                    <!-- End Main Column -->
-                    </div><!-- end post-body-content -->
-                    <div id="postbox-container-1" class="postbox-container">
-                    <!-- Right Column -->
-                    <?php
+                    case 'right_column':
+                        ?>
+                        <!-- End Main Column -->
+                        </div><!-- end post-body-content -->
+                        <div id="postbox-container-1" class="postbox-container">
+                        <!-- Right Column -->
+                        <?php
                     break;
                     case 'end':
                         ?>
