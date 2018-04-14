@@ -67,13 +67,17 @@ class DT_Zume_Menu
 
         $tab_bar = [
             [
-            'key' => 'dt_settings',
-            'label' => __( 'Settings', 'dt_zume' ),
+                'key' => 'settings',
+                'label' => __( 'Settings', 'dt_zume' ),
+            ],
+            [
+                'key' => 'utilities',
+                'label' => __( 'Utilities', 'dt_zume' ),
             ]
         ];
 
         // determine active tabs
-        $active_tab = 'dt_settings';
+        $active_tab = 'settings';
 
         if ( isset( $_GET["tab"] ) ) {
             $active_tab = sanitize_key( wp_unslash( $_GET["tab"] ) );
@@ -109,8 +113,11 @@ class DT_Zume_Menu
             <?php
             switch ( $active_tab ) {
 
-                case "dt_settings":
+                case "settings":
                     $this->tab_dt_settings();
+                    break;
+                case "utilities":
+                    $this->tab_utilities();
                     break;
                 default:
                     break;
@@ -126,77 +133,24 @@ class DT_Zume_Menu
         // begin columns template
         $this->template( 'begin' );
 
-        // Runs validation of the database when page is loaded.
+        // add boxes
         $this->site_default_metabox();
-        $this->select_location_levels_to_record();
-//        $this->raw_data_retrieval_test();
-//        $this->function_test();
 
-        // begin right column template
         $this->template( 'right_column' );
-        // end columns template
         $this->template( 'end' );
     }
 
-    public function template( $section, $columns = 2 ) {
-        switch ( $columns ) {
+    public function tab_utilities() {
+        // begin columns template
+        $this->template( 'begin' );
 
-            case '1':
-                switch ( $section ) {
-                    case 'begin':
-                        ?>
-                        <div class="wrap">
-                        <div id="poststuff">
-                        <div id="post-body" class="metabox-holder columns-1">
-                        <div id="post-body-content">
-                        <!-- Main Column -->
-                        <?php
-                        break;
+        // add boxes
+        $this->raw_data_retrieval_test();
+        $this->function_test();
 
-
-                    case 'end':
-                        ?>
-                        </div><!-- postbox-container 1 -->
-                        </div><!-- post-body meta box container -->
-                        </div><!--poststuff end -->
-                        </div><!-- wrap end -->
-                        <?php
-                        break;
-                }
-                break;
-
-            case '2':
-                switch ( $section ) {
-                    case 'begin':
-                        ?>
-                        <div class="wrap">
-                        <div id="poststuff">
-                        <div id="post-body" class="metabox-holder columns-2">
-                        <div id="post-body-content">
-                        <!-- Main Column -->
-                        <?php
-                        break;
-                    case 'right_column':
-                        ?>
-                        <!-- End Main Column -->
-                        </div><!-- end post-body-content -->
-                        <div id="postbox-container-1" class="postbox-container">
-                        <!-- Right Column -->
-                        <?php
-                    break;
-                    case 'end':
-                        ?>
-                        </div><!-- postbox-container 1 -->
-                        </div><!-- post-body meta box container -->
-                        </div><!--poststuff end -->
-                        </div><!-- wrap end -->
-                        <?php
-                        break;
-                }
-                break;
-        }
+        $this->template( 'right_column' );
+        $this->template( 'end' );
     }
-
 
     public static function site_default_metabox()
     {
@@ -354,87 +308,7 @@ class DT_Zume_Menu
         <?php
     }
 
-    public static function admin_levels_array() {
-        // @note Changes here might need to be reflected in the activation() in disciple-tools-zume.php
-        return [
-            'country' => 'Country (recommended)',
-            'administrative_area_level_1' => 'Admin Level 1 (ex. state / province) (recommended)',
-            'administrative_area_level_2' => 'Admin Level 2',
-            'administrative_area_level_3' => 'Admin Level 3',
-            'administrative_area_level_4' => 'Admin Level 4',
-            'locality' => 'Locality (ex. city name) (recommended)',
-            'neighborhood' => 'Neighborhood' ];
-    }
 
-    public static function select_location_levels_to_record()
-    {
-        $list_array = self::admin_levels_array();
-        $settings = get_option('dt_zume_selected_location_levels');
-
-        // Check for post
-        if ( isset( $_POST['dt_zume_select_levels_nonce'] ) && ! empty( $_POST['dt_zume_select_levels_nonce'] )
-            && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_zume_select_levels_nonce'] ) ), 'dt_zume_select_levels'. get_current_user_id() ) ) {
-
-            unset( $_POST['dt_zume_select_levels_nonce'] );
-
-            foreach ( array_keys( $list_array ) as $key ) {
-                if ( isset( $_POST[$key] ) ) {
-                    $settings[$key] = 1;
-                } else {
-                    $settings[$key] = 0;
-                }
-            }
-            
-            dt_write_log($settings);
-            update_option('dt_zume_selected_location_levels', $settings, false );
-        }
-
-
-        ?>
-        <form method="post" action="">
-            <?php wp_nonce_field( 'dt_zume_select_levels'. get_current_user_id(), 'dt_zume_select_levels_nonce', false, true ) ?>
-
-            <!-- Box -->
-            <table class="widefat striped">
-                <thead>
-                <tr>
-                    <td colspan="2">
-                        <?php esc_html_e( 'Select Levels for Auto Building Locations' ) ?>
-                    </td>
-                </tr>
-                </thead>
-                <tbody>
-
-                <?php
-
-                foreach( $list_array as $item => $label ) : ?>
-                    <tr>
-                        <td>
-                            <label for="<?php echo esc_attr( $item ) ?>"><?php echo esc_attr( $label ) ?></label>
-                        </td>
-                        <td>
-                            <input type="checkbox" value="1" id="<?php echo esc_attr( $item ) ?>" name="<?php echo esc_html( $item ) ?>"
-                            <?php  isset( $settings[$item] ) && $settings[$item] == 1  ? print esc_html('checked' ) : print '' ?>
-                            />
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-
-                <tr>
-                    <td colspan="2">
-                        <button class="button" type="submit"><?php esc_html_e( 'Select Levels for Locations Integration' ) ?></button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <br>
-            <!-- End Box -->
-
-
-
-        </form>
-        <?php
-    }
 
     public static function function_test()
     {
@@ -509,5 +383,64 @@ class DT_Zume_Menu
 
         </form>
         <?php
+    }
+
+    public function template( $section, $columns = 2 ) {
+        switch ( $columns ) {
+
+            case '1':
+                switch ( $section ) {
+                    case 'begin':
+                        ?>
+                        <div class="wrap">
+                        <div id="poststuff">
+                        <div id="post-body" class="metabox-holder columns-1">
+                        <div id="post-body-content">
+                        <!-- Main Column -->
+                        <?php
+                        break;
+
+
+                    case 'end':
+                        ?>
+                        </div><!-- postbox-container 1 -->
+                        </div><!-- post-body meta box container -->
+                        </div><!--poststuff end -->
+                        </div><!-- wrap end -->
+                        <?php
+                        break;
+                }
+                break;
+
+            case '2':
+                switch ( $section ) {
+                    case 'begin':
+                        ?>
+                        <div class="wrap">
+                        <div id="poststuff">
+                        <div id="post-body" class="metabox-holder columns-2">
+                        <div id="post-body-content">
+                        <!-- Main Column -->
+                        <?php
+                        break;
+                case 'right_column':
+                    ?>
+                    <!-- End Main Column -->
+                    </div><!-- end post-body-content -->
+                    <div id="postbox-container-1" class="postbox-container">
+                    <!-- Right Column -->
+                    <?php
+                    break;
+                    case 'end':
+                        ?>
+                        </div><!-- postbox-container 1 -->
+                        </div><!-- post-body meta box container -->
+                        </div><!--poststuff end -->
+                        </div><!-- wrap end -->
+                        <?php
+                        break;
+                }
+                break;
+        }
     }
 }

@@ -20,9 +20,13 @@ function show_zume_project(){
     let screenHeight = jQuery(window).height()
     let chartHeight = screenHeight / 1.3
     let chartDiv = jQuery('#chart')
-    chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_project +'</span>')
-
-    chartDiv.append(`
+    chartDiv.empty().html(`
+        <span class="section-header">`+ wpApiZumeMetrics.translations.zume_project +`</span>
+        <span style="float:right; font-size:1.5em;color:#3f729b;"><a data-open="zume-project-legend"><i class="fi-info"></i></a></span>
+        <div class="medium reveal" id="zume-project-legend" data-reveal>`+ legend() +` <button class="close-button" data-close aria-label="Close modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button></div>
+        
         <div id="zume-locations" style="height: 500px; margin: 0 1em 1.2em; "></div>
         <div class="grid-x grid-padding-x grid-padding-y">
             <div class="cell">
@@ -34,7 +38,7 @@ function show_zume_project(){
                     <h4>Trained People<br><span id="people_numbers"></span></h4>
                     </div>
                     <div class="medium-3 cell center">
-                    <h4>Hours of Training<br><span id="hours_trained"></span></h4>
+                    <h4>Group Training<br><span id="hours_trained"></span> hours</h4>
                     </div>
                     <div class="medium-3 cell center">
                     <h4>Countries<br><span id="country_numbers"></span></h4>
@@ -44,25 +48,44 @@ function show_zume_project(){
             <div class="cell center">
                 <p class="section-subheader" >Groups Trends</p>
                 <div id="combo_trend_groups" style="width: 100%; height: 500px;"></div>
-                <hr>
+            </div>
+            <div class="cell">
+                <div class="grid-x callout">
+                    <div class="medium-3 cell center">
+                    <h4>Registered Groups<br><span id="registered_groups"></span></h4>
+                    </div>
+                    <div class="medium-3 cell center">
+                    <h4>Engaged Groups<br><span id="engaged_groups"></span></h4>
+                    </div>
+                    <div class="medium-3 cell center">
+                    <h4>Trained Groups<br><span id="trained_groups"></span></h4>
+                    </div>
+                    <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
+                    <h4>Active Groups<br><span id="active_groups"></span></h4>
+                    </div>
+                </div>
             </div>
             <div class="cell center">
                 <span class="section-subheader" >People Trends</span>
                 <div id="combo_trend_people" style="width: 100%; height: 500px;"></div>
-                <hr>
             </div>
             <div class="cell center">
-            <span class="section-subheader" >All Time</span>
-            </div>
-            <div class="cell">
-            <div class="grid-x grid-padding-x ">
-                <div class="cell medium-6">
-                    <div id="table_totals_group_people"></div>
+                <div class="grid-x callout">
+                    <div class="medium-3 cell center">
+                    <h4>Registered People<br><span id="registered_people"></span></h4>
+                    </div>
+                    <div class="medium-3 cell center">
+                    <h4>Engaged People<br><span id="engaged_people"></span></h4>
+                    </div>
+                    <div class="medium-3 cell center">
+                    <h4>Trained People<br><span id="trained_people"></span></h4>
+                    </div>
+                    <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
+                    <h4>Active People<br><span id="active_people" ></span></h4>
+                    </div>
                 </div>
-                <div class="cell medium-6">
-                    <div id="table_total_misc"></div>
-                </div>
             </div>
+            
         </div>
         `)
 
@@ -73,12 +96,20 @@ function show_zume_project(){
     jQuery('#hours_trained').append( hero.hours_trained_as_group )
     jQuery('#country_numbers').append( hero.total_countries )
 
+    jQuery('#registered_groups').append( hero.registered_groups )
+    jQuery('#engaged_groups').append( hero.engaged_groups )
+    jQuery('#trained_groups').append( hero.trained_groups )
+    jQuery('#active_groups').append( hero.active_groups )
+
+    jQuery('#registered_people').append( hero.registered_people )
+    jQuery('#engaged_people').append( hero.engaged_people )
+    jQuery('#trained_people').append( hero.trained_people )
+    jQuery('#active_people').append( hero.active_people )
+
     // build charts
     google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
 
     google.charts.setOnLoadCallback(drawWorld);
-    google.charts.setOnLoadCallback(drawTable);
-    google.charts.setOnLoadCallback(drawTableMisc);
     google.charts.setOnLoadCallback(drawComboTrendsGroups);
     google.charts.setOnLoadCallback(drawComboTrendsPeople);
 
@@ -98,7 +129,8 @@ function show_zume_project(){
         var data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.groups_progress_by_month);
 
         var options = {
-            hAxis: {title: 'Months'},
+            hAxis: {title: 'Months' },
+            // vAxis: { scaleType: 'mirrorLog' },
             seriesType: 'bars',
             chartArea:{left: '10%',top:'5px',width:'75%',height:'75%'},
             series: {4: {type: 'line'}},
@@ -125,24 +157,7 @@ function show_zume_project(){
         chart.draw(data, options);
     }
 
-    function drawTable() {
-        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.table_totals_group_people);
-        let table = new google.visualization.Table(document.getElementById('table_totals_group_people'));
-        table.draw(data, {
-            showRowNumber: true,
-            width: '100%',
-            height: '100%'
-        });
-    }
-    function drawTableMisc() {
-        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.table_total_misc);
-        let table = new google.visualization.Table(document.getElementById('table_total_misc'));
-        table.draw(data, {
-            showRowNumber: true,
-            width: '100%',
-            height: '100%'
-        });
-    }
+    new Foundation.Reveal(jQuery('#zume-project-legend'));
 
     chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
             <a onclick="refresh_stats_data( 'show_zume_project' ); jQuery('.spinner').show();">Refresh</a>
@@ -156,9 +171,13 @@ function show_zume_groups(){
     let chartHeight = screenHeight / 1.8
     let chartDiv = jQuery('#chart')
 
-    chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_groups +'</span>');
-
-    chartDiv.append(`<br><br>
+    chartDiv.empty().html(`
+        <span class="section-header">`+ wpApiZumeMetrics.translations.zume_groups +`</span>
+        <div class="medium reveal" id="zume-project-legend" data-reveal>`+ legend() +` <button class="close-button" data-close aria-label="Close modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button></div>
+            
+            <br><br>
             <div class="grid-x grid-padding-x grid-padding-y">
             <div class="cell">
                 <div class="grid-x callout">
@@ -166,13 +185,13 @@ function show_zume_groups(){
                     <h4>Registered Groups<br><span id="registered_groups"></span></h4>
                     </div>
                     <div class="medium-3 cell center">
+                    <h4>Engaged Groups<br><span id="engaged_groups"></span></h4>
+                    </div>
+                    <div class="medium-3 cell center">
                     <h4>Trained Groups<br><span id="trained_groups"></span></h4>
                     </div>
-                    <div class="medium-3 cell center">
-                    <h4>4+ Members<br><span id="over_4"></span></h4>
-                    </div>
-                    <div class="medium-3 cell center">
-                    <h4>Countries<br><span id="country_numbers"></span></h4>
+                    <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
+                    <h4>Active Groups<br><span id="active_groups"></span></h4>
                     </div>
                 </div>
             </div>
@@ -202,10 +221,10 @@ function show_zume_groups(){
 
     // Add hero stats
     let hero = wpApiZumeMetrics.zume_stats.hero_stats
-    jQuery('#registered_groups').append( hero.total_groups_registered )
+    jQuery('#registered_groups').append( hero.registered_groups )
+    jQuery('#engaged_groups').append( hero.engaged_groups )
     jQuery('#trained_groups').append( hero.trained_groups )
-    jQuery('#over_4').append( hero.groups_over_4_members )
-    jQuery('#country_numbers').append( hero.total_countries )
+    jQuery('#active_groups').append( hero.active_groups )
 
     google.charts.load('current', {packages: ['corechart', 'bar']});
     google.charts.setOnLoadCallback(drawMembersPerGroup)
@@ -299,6 +318,8 @@ function show_zume_groups(){
         chart.draw(data, options);
     }
 
+    new Foundation.Reveal(jQuery('#zume-project-legend'));
+
     chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
             <a onclick="refresh_stats_data( 'show_zume_groups' ); jQuery('.spinner').show();">Refresh</a>
             <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
@@ -310,74 +331,74 @@ function show_zume_people(){
     let screenHeight = jQuery(window).height()
     let chartHeight = screenHeight / 1.3
     let chartDiv = jQuery('#chart')
-    chartDiv.empty().html('<span class="section-header">'+ wpApiZumeMetrics.translations.zume_people +'</span>')
-
-    chartDiv.append(`<br><br>
-        <div class="grid-x grid-padding-x grid-padding-y">
-            <div class="cell center">
-                <div class="grid-x callout">
-                    <div class="medium-3 cell center">
-                    <h4>Engaged People<br><span id="engaged_people"></span></h4>
+    chartDiv.empty().html(`<span class="section-header">`+ wpApiZumeMetrics.translations.zume_people +`</span>
+        <span style="float:right; font-size:1.5em;color:#3f729b;"><a data-open="zume-project-legend"><i class="fi-info"></i></a></span>
+        <div class="medium reveal" id="zume-project-legend" data-reveal>`+ legend() +` <button class="close-button" data-close aria-label="Close modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button></div>
+            
+            <br><br>
+                <div class="grid-x grid-padding-x grid-padding-y">
+                    <div class="cell center">
+                        <div class="grid-x callout">
+                            <div class="medium-3 cell center">
+                            <h4>Registered People<br><span id="registered_people"></span></h4>
+                            </div>
+                            <div class="medium-3 cell center">
+                            <h4>Engaged People<br><span id="engaged_people"></span></h4>
+                            </div>
+                            <div class="medium-3 cell center">
+                            <h4>Trained People<br><span id="trained_people"></span></h4>
+                            </div>
+                            <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
+                            <h4>Active People<br><span id="active_people" ></span></h4>
+                            </div>
+                        </div>
                     </div>
-                    <div class="medium-3 cell center">
-                    <h4>Active People<br><span id="active_people"></span></h4>
-                    </div>
-                    <div class="medium-3 cell center">
-                    <h4>Trained People<br><span id="trained_people"></span></h4>
-                    </div>
-                    <div class="medium-3 cell center">
-                    <h4>In Groups<br><span id="total_people_in_groups"></span></h4>
-                    </div>
+                <div class="cell center">
+                    <span class="section-subheader">People Trends</span>
+                    <div id="combo_trend_people" style="width: 100%; height: 400px;"></div>
+                    <hr>
                 </div>
-            </div>
-            <div class="cell center">
-                <span class="section-subheader">Active People engaging Zúme Project</span>
-                <div id="active_people_timeline" style="width: 100%; height: 400px;"></div>
-                <hr>
-            </div>
-            <div class="cell center">
-                <span class="section-subheader">Language Users in Zúme</span>
-                <div id="people_languages" style="height: 500px; margin: 0 1em; "></div>
-            </div>
-            <div class="cell center">
-                <span class="section-subheader center">Misc</span>
-            </div>
-            <div class="cell">
-                <div id="table_div"></div>
-            </div>
+                <div class="cell center">
+                    <span class="section-subheader">Language Users in Zúme</span>
+                    <div id="people_languages" style="height: 500px; margin: 0 1em; "></div>
+                </div>
+                <div class="cell center">
+                    <span class="section-subheader center"></span>
+                </div>
+                <div class="cell">
+                    <div id="table_div"></div>
+                </div>
         </div>
         `)
 
     let hero = wpApiZumeMetrics.zume_stats.hero_stats
+    jQuery('#registered_people').append( hero.registered_people )
     jQuery('#engaged_people').append( hero.engaged_people )
-    jQuery('#active_people').append( hero.active_people )
     jQuery('#trained_people').append( hero.trained_people )
-    jQuery('#total_people_in_groups').append( hero.total_people_in_groups )
+    jQuery('#active_people').append( hero.active_people )
 
     google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
 
-    google.charts.setOnLoadCallback(drawTable);
-    google.charts.setOnLoadCallback(drawProgress);
+    // google.charts.setOnLoadCallback(drawTable);
+    google.charts.setOnLoadCallback(drawComboTrendsPeople);
     google.charts.setOnLoadCallback(drawLanguagesChart)
 
 
-    function drawProgress() {
-        // LINE CHART
-        var data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.active_people_timeline );
+    function drawComboTrendsPeople() {
+        // Some raw data (not necessarily accurate)
+        var data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.people_progress_by_month);
+
         var options = {
-            curveType: 'function',
-            legend: { position: 'bottom' },
-            chartArea: {
-                left: '10%',
-                top: '10px',
-                width: "80%",
-                height: "90%" },
-            vAxis: {
-                title: 'active people'
-            }
+            hAxis: {title: 'Months'},
+            seriesType: 'bars',
+            chartArea:{left: '10%',top:'5px',width:'75%',height:'75%'},
+            series: {4: {type: 'line'}},
+            colors:['lightblue', 'skyblue', 'blue', 'darkblue'],
         };
 
-        var chart = new google.visualization.LineChart(document.getElementById('active_people_timeline'));
+        var chart = new google.visualization.ComboChart(document.getElementById('combo_trend_people'));
         chart.draw(data, options);
     }
 
@@ -397,11 +418,13 @@ function show_zume_people(){
         chart.draw(chartData, options);
     }
 
-    function drawTable() {
-        let data = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.people_info );
-        let table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-    }
+    // function drawTable() {
+    //     let data = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.people_info );
+    //     let table = new google.visualization.Table(document.getElementById('table_div'));
+    //     table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+    // }
+
+    new Foundation.Reveal(jQuery('#zume-project-legend'));
 
     chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
             <a onclick="refresh_stats_data( 'show_zume_project' ); jQuery('.spinner').show();">Refresh</a>
@@ -416,6 +439,11 @@ function show_zume_locations(){
     let chartDiv = jQuery('#chart')
 
     chartDiv.empty().html(`<span class="section-header">`+ wpApiZumeMetrics.translations.zume_locations +`</span>
+        
+        <span style="float:right; font-size:1.5em;color:#3f729b;"><a data-open="zume-project-legend"><i class="fi-info"></i></a></span>
+        <div class="medium reveal" id="zume-project-legend" data-reveal>`+ legend() +` <button class="close-button" data-close aria-label="Close modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                    </button></div>
         
         <div id="zume-locations" style="height: 500px; margin: 0 1em 1.2em; "></div>
         <div class="grid-x grid-padding-x">
@@ -571,10 +599,23 @@ function show_zume_locations(){
 
     }
 
+    new Foundation.Reveal(jQuery('#zume-project-legend'));
+
     chartDiv.append(`<hr><div><span class="small grey">( stats as of `+ wpApiZumeMetrics.zume_stats.timestamp +` )</span> 
             <a onclick="refresh_stats_data( 'show_zume_locations' ); jQuery('.spinner').show();">Refresh</a>
             <span class="spinner" style="display: none;"><img src="`+wpApiZumeMetrics.plugin_uri+`includes/ajax-loader.gif" /></span> 
             </div>`)
+}
+
+function legend() {
+    return `<h2>Chart Legend</h2><hr>
+            <dl>
+            <dt>Registered</dt><dd>Groups or people who have registered on Zumeproject.com</dd>
+            <dt>Engaged</dt><dd>Groups or people who have registered on Zumeproject.com</dd>
+            <dt>Trained</dt><dd>Trained groups and people have been through the entire Zúme training.</dd>
+            <dt>Active</dt><dd>Active groups and people have finished a session in the last 30 days. Active in month charts measure according to the month listed. It is the same 'active' behavior, but broken up into different time units.</dd>
+            <dt>Hours of Training</dt><dd>Hours of completed sessions for groups or people.</dd>
+            </dl>`
 }
 
 function refresh_stats_data( page ){
