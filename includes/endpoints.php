@@ -302,106 +302,38 @@ class DT_Zume_Core_Endpoints
         return $fields;
     }
 
-    /**
-     * @param        $location_data
-     * @param string $type
-     *
-     * @return array|\WP_Error
-     */
-    public function build_location_from_raw_info( $location_data, $type = 'google_result' ) {
-
-        $address_components = [];
-        $raw_google_response = [];
-
-        // check for nulls and build array for searching
-        switch ( $type ) {
-            case 'google_result': // this is a raw google geocoding result
-                if ( ! is_null( $location_data ) && isset( $location_data['status'] ) && ( 'OK' == $location_data['status'] ?? ''  ) ) {
-                    $address_components = $location_data['results'][0]['address_components'];
-                    $raw_google_response = $location_data;
-                }
-                break;
-            case 'address':
-                if ( ! empty( $location_data ) ) {
-                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $location_data );
-                    if ( $result ) {
-                        $address_components = $result['results'][0]['address_components'];
-                        $raw_google_response = $result;
-                    }
-                }
-                break;
-            case 'ip_address':
-                // @todo reverse geocode from lng/lat
-                /** @link https://developers.google.com/maps/documentation/geocoding/intro#ReverseGeocoding */
-                break;
-            case 'lng_lat':
-                // @todo lookup ip address, then reverse geocode from lng/lat of ip address
-                break;
-            default:
-                break;
-        }
-
-        if ( empty( $address_components ) ) {
-            dt_write_log( new WP_Error( __METHOD__, 'No valid address components' ) );
-            dt_write_log( $address_components );
-            return new WP_Error( __METHOD__, 'No valid address components' );
-        }
-
-        $location = [];
-        $level1 = '';
-        $level2 = '';
-
-        foreach ( $address_components as $address_component ) {
-            if ( 'neighborhood' == $address_component['types'][0] ) {
-                $location['neighborhood'] = $address_component['long_name'];
-                $level2 .= $location['neighborhood'] . ', ';
-            }
-            if ( 'locality' == $address_component['types'][0] ) {
-                $location['locality'] = $address_component['long_name'];
-                $level2 .= $location['locality'] . ', ';
-            }
-            if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
-                $location['admin_2'] = $address_component['long_name'];
-                $level2 .= $location['admin_2'] . ', ';
-            }
-            if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
-                $location['admin_1'] = $address_component['long_name'];
-                $level1 .= $location['admin_1'] . ', ';
-            }
-            if ( 'country' == $address_component['types'][0] ) {
-                $location['country'] = $address_component['long_name'];
-                $level1 .= $location['country'];
-            }
-            $level1 = rtrim( $level1, ',' );
-        }
-
-        $level2 = substr( $level2, 0, -2 );
-
-        $location['level2'] = $level2;
-        $location['level1'] = $level1;
-        $location['raw'] = $raw_google_response;
-
-        return $location;
-    }
 
     public function parse_raw_user_record_for_location_id( $raw_user_record ) {
 
-        $raw_result_data = false;
-        // if get valid raw location data
-        // else get valid location components
-            // if valid location components, get raw location response
-        // else return no location id
+        if ( ! isset( $raw_user_record['zume_raw_location'] ) || ! isset( $raw_user_record['zume_raw_location_from_ip'] ) ) {
+            return false;
+        }
 
+        if ( $raw_user_record['zume_raw_location'] ) { // prioritize user provided location info
+            $raw_location = $raw_user_record['zume_raw_location'];
+        } else {
+            $raw_location = $raw_user_record['zume_raw_location_from_ip'];
+        }
 
-        // parse valid location data for location components
-        if ( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
+        if ( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_location ) ) { // test for valid raw location data
             return false;
         }
 
         $post_id = false;
-        // @todo note overwrite the $post_id at each check down the chain, so all is created in parent order, but returns post_id
+        $auto_create_location = dt_get_option('auto_location' );
+        $location_level_preference = dt_get_option('location_levels');
 
-        // check for country location post_id, or create country location post_id
+        // @todo note overwrite the $post_id at each check down the chain, so all is created in parent order, but returns post_id
+        if ( $country = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'country') ) {
+            // lookup country location
+
+            // auto create??
+        }
+
+
+        $country = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_user_record, 'country' );
+
+
         // check for admin1 location post_id with country parent_id, or create admin1 post_id
         // check for admin2 location post_id with country parent_id, or create admin1 post_id
         // check for admin3 location post_id with country parent_id, or create admin1 post_id
@@ -593,6 +525,89 @@ class DT_Zume_Core_Endpoints
                 break;
         }
     }
+
+    /**
+     * @param        $location_data
+     * @param string $type
+     *
+     * @return array|\WP_Error
+     */
+    public function build_location_from_raw_info( $location_data, $type = 'google_result' ) {
+
+        $address_components = [];
+        $raw_google_response = [];
+
+        // check for nulls and build array for searching
+        switch ( $type ) {
+            case 'google_result': // this is a raw google geocoding result
+                if ( ! is_null( $location_data ) && isset( $location_data['status'] ) && ( 'OK' == $location_data['status'] ?? ''  ) ) {
+                    $address_components = $location_data['results'][0]['address_components'];
+                    $raw_google_response = $location_data;
+                }
+                break;
+            case 'address':
+                if ( ! empty( $location_data ) ) {
+                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $location_data );
+                    if ( $result ) {
+                        $address_components = $result['results'][0]['address_components'];
+                        $raw_google_response = $result;
+                    }
+                }
+                break;
+            case 'ip_address':
+                // @todo reverse geocode from lng/lat
+                /** @link https://developers.google.com/maps/documentation/geocoding/intro#ReverseGeocoding */
+                break;
+            case 'lng_lat':
+                // @todo lookup ip address, then reverse geocode from lng/lat of ip address
+                break;
+            default:
+                break;
+        }
+
+        if ( empty( $address_components ) ) {
+            dt_write_log( new WP_Error( __METHOD__, 'No valid address components' ) );
+            dt_write_log( $address_components );
+            return new WP_Error( __METHOD__, 'No valid address components' );
+        }
+
+        $location = [];
+        $level1 = '';
+        $level2 = '';
+
+        foreach ( $address_components as $address_component ) {
+            if ( 'neighborhood' == $address_component['types'][0] ) {
+                $location['neighborhood'] = $address_component['long_name'];
+                $level2 .= $location['neighborhood'] . ', ';
+            }
+            if ( 'locality' == $address_component['types'][0] ) {
+                $location['locality'] = $address_component['long_name'];
+                $level2 .= $location['locality'] . ', ';
+            }
+            if ( 'administrative_area_level_2' == $address_component['types'][0] ) {
+                $location['admin_2'] = $address_component['long_name'];
+                $level2 .= $location['admin_2'] . ', ';
+            }
+            if ( 'administrative_area_level_1' == $address_component['types'][0] ) {
+                $location['admin_1'] = $address_component['long_name'];
+                $level1 .= $location['admin_1'] . ', ';
+            }
+            if ( 'country' == $address_component['types'][0] ) {
+                $location['country'] = $address_component['long_name'];
+                $level1 .= $location['country'];
+            }
+            $level1 = rtrim( $level1, ',' );
+        }
+
+        $level2 = substr( $level2, 0, -2 );
+
+        $location['level2'] = $level2;
+        $location['level1'] = $level1;
+        $location['raw'] = $raw_google_response;
+
+        return $location;
+    }
+
 
 }
 DT_Zume_Core_Endpoints::instance();

@@ -178,6 +178,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                 </div>
                 <?php endif; ?>
             </div>
+        <br clear="all" />
 
         <?php
         endif;
@@ -391,6 +392,7 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                 </div>
                 <?php endif; ?>
             </div>
+            <br clear="all" />
 
 
             <script>

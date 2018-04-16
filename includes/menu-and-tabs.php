@@ -308,8 +308,6 @@ class DT_Zume_Menu
         <?php
     }
 
-
-
     public static function function_test()
     {
         $report = [];
