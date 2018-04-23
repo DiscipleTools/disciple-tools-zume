@@ -399,50 +399,6 @@ class DT_Zume_Core_Endpoints
         }
     }
 
-    public function find_or_add_location( $location ) {
-        // expects $location to be prepared by $this->build_location_from_raw_info
-
-
-        // first find level 1 record or create it
-        if ( ! isset( $location['level1'] ) ) {
-            return false;
-        }
-        $level_1 = get_page_by_title( $location['level1'], ARRAY_A, 'locations' );
-        if ( ! $level_1 ) {
-            // create post
-            $fields = [
-                'post_title' => wp_strip_all_tags( $location['level1'] ),
-                'post_parent' => '',
-                'post_type'   => "locations",
-                "post_status" => 'publish',
-                'meta_input'  => [
-                    'location' => $location['raw'],
-                    'lat' => '',
-                    'lng' => '',
-                    'northeast_lat' => '',
-                    'northeast_lng' => '',
-                    'southwest_lat' => '',
-                    'southwest_lng' => '',
-                ],
-            ];
-
-            $level_1 = Disciple_Tools_Locations::create_location( $fields, false );
-        }
-
-        // second find level 2 record or create it.
-        if ( ! isset( $location['level2'] ) ) {
-            return false;
-        }
-        $level_2 = get_page_by_title( $location['level2'], ARRAY_A, 'locations' );
-        if ( ! $level_2 ) {
-            // create post @todo
-
-        }
-
-        // return location post id
-        return $level_2;
-
-    }
 
     public function build_group_record_array( $raw_record, $owner_post_id ) {
 
