@@ -320,11 +320,11 @@ class DT_Zume_Core_Endpoints
         }
 
         $post_id = false;
-        $auto_create_location = dt_get_option('auto_location' );
-        $location_level_preference = dt_get_option('location_levels');
+        $auto_create_location = dt_get_option( 'auto_location' );
+        $location_level_preference = dt_get_option( 'location_levels' );
 
         // @todo note overwrite the $post_id at each check down the chain, so all is created in parent order, but returns post_id
-        if ( $country = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'country') ) {
+        if ( $country = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'country' ) ) {
             // lookup country location
 
             // auto create??
