@@ -52,7 +52,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
             global $post;
             DT_Zume_Core::check_for_update( $post->ID, 'contact' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
-            $plan_key = md5( maybe_serialize( $record['zume_three_month_plan'] ) );
+            $plan_key = md5( maybe_serialize( $record['zume_three_month_plan'] ?? '' ) );
             ?>
             <label class="section-header"><?php esc_html_e( 'Zúme Info' ) ?></label>
 
@@ -72,12 +72,15 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                 <!-- Sessions Tab -->
                 <div class="tabs-panel is-active" id="info" style="min-height: 375px;">
                     <dl>
+
+                    <?php if ( isset( $record['zume_three_month_plan'] ) ) : ?>
                         <dt>
                             <?php esc_html_e( 'Three Month Plan' ) ?>:
                         </dt>
-                    <dd>
-                        <a data-open="<?php echo esc_attr( $plan_key ) ?>"><?php esc_html_e( 'View Three Month Plan' ) ?></a>
-                    </dd>
+                        <dd>
+                            <a data-open="<?php echo esc_attr( $plan_key ) ?>"><?php esc_html_e( 'View Three Month Plan' ) ?></a>
+                        </dd>
+                    <?php endif; ?>
 
                     <?php if ( isset( $record['user_registered'] ) && ! empty( $record['user_registered'] ) ) :
                         $mdy = DateTime::createFromFormat( 'Y-m-d H:i:s', $record['user_registered'] )->format( 'm/d/Y' );
@@ -121,6 +124,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
 
                     </dl>
 
+                    <?php if ( isset( $record['zume_three_month_plan'] ) ) : ?>
                     <div class="reveal small" id="<?php echo esc_attr( $plan_key ) ?>" data-reveal>
                         <h3><?php esc_html_e( 'Three Month Plan' ) ?></h3><hr>
                         <dl>
@@ -136,16 +140,17 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
+                    <?php endif; ?>
 
                 </div>
 
                 <!-- Map Tab-->
                 <div class="tabs-panel" id="map">
                     <?php
-                    $lng = $record['zume_user_lng'] ?: $record['zume_lng_from_ip'];
-                    $lat = $record['zume_user_lat'] ?: $record['zume_lat_from_ip'];
-                    $address = $record['zume_user_address'] ?: $record['zume_address_from_ip'];
-                    $source = $record['zume_user_address'] ? 'from user' : 'from ip address';
+                    $lng = $record['zume_user_lng'] ?? $record['zume_lng_from_ip'] ?? '';
+                    $lat = $record['zume_user_lat'] ?? $record['zume_lat_from_ip'] ?? '';
+                    $address = $record['zume_user_address'] ?? $record['zume_address_from_ip'] ?? '';
+                    $source = $record['zume_user_address'] ?? false ? 'from user' : 'from ip address';
 
                     if ( empty( $lng ) || empty( $lat ) ) : ?>
                         <p><?php esc_html_e( 'No map info gathered.' ) ?></p>

@@ -22,6 +22,10 @@ class DT_Zume_Core
         $foreign_key = get_post_meta( $post_id, 'zume_foreign_key', true );
 
         $site = self::get_site_details( get_option( 'zume_default_site' ) );
+        if ( is_wp_error( $site ) ) {
+            dt_write_log( $site );
+            return false;
+        }
 
         // Send remote request
         $args = [
@@ -81,6 +85,10 @@ class DT_Zume_Core
         $check_sum = $raw_record['zume_stats_check_sum'] ?: md5( 'no_check_sum' );
 
         $site = self::get_site_details( get_option( 'zume_default_site' ) );
+        if ( is_wp_error( $site ) ) {
+            dt_write_log( $site );
+            return [];
+        }
 
         // Send remote request
         $args = [
@@ -157,10 +165,14 @@ class DT_Zume_Core
      *
      * @param $site_key
      *
-     * @return array
+     * @return array|WP_Error
      */
     public static function get_site_details( $site_key ) {
         $keys = Site_Link_System::get_site_keys();
+
+        if ( ! isset( $keys[$site_key]['site1'] ) || ! isset( $keys[$site_key]['site2'] ) ) {
+            return new WP_Error( __METHOD__, 'Missing required site keys' );
+        }
 
         $site1 = $keys[$site_key]['site1'];
         $site2 = $keys[$site_key]['site2'];
@@ -169,8 +181,8 @@ class DT_Zume_Core
         $transfer_token = Site_Link_System::create_transfer_token_for_site( $site_key );
 
         return [
-        'url' => $url,
-        'transfer_token' => $transfer_token
+            'url' => $url,
+            'transfer_token' => $transfer_token
         ];
     }
 

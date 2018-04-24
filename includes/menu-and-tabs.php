@@ -221,55 +221,59 @@ class DT_Zume_Menu
                 $check_sum = $raw_record['zume_stats_check_sum'] ?: md5( 'no_check_sum' );
 
                 $site = DT_Zume_Core::get_site_details( get_option( 'zume_default_site' ) );
+                if ( is_wp_error( $site ) ) {
+                    dt_write_log( $site );
+                    $error[] = $site;
+                } else {
+                    // Send remote request
+                    $args = [
+                        'method' => 'POST',
+                        'body' => [
+                            'transfer_token' => $site['transfer_token'],
+                            'zume_stats_check_sum' => $check_sum,
+                        ]
+                    ];
+                    $result = DT_Zume_Core::remote_send( 'get_project_stats', $site['url'], $args );
+                    if ( is_wp_error( $result ) || is_wp_error( $result['body'] ) ) {
+                        dt_write_log( $result );
+                        $error[] = get_option( 'zume_stats_raw_record', [] );
+                    }
+                    if ( isset( $result['body'] ) ) {
+                        $response = json_decode( $result['body'], true );
 
-                // Send remote request
-                $args = [
-                    'method' => 'POST',
-                    'body' => [
-                        'transfer_token' => $site['transfer_token'],
-                        'zume_stats_check_sum' => $check_sum,
-                    ]
-                ];
-                $result = DT_Zume_Core::remote_send( 'get_project_stats', $site['url'], $args );
-                if ( is_wp_error( $result ) || is_wp_error( $result['body'] ) ) {
-                    dt_write_log( $result );
-                    $error[] = get_option( 'zume_stats_raw_record', [] );
-                }
-                if ( isset( $result['body'] ) ) {
-                    $response = json_decode( $result['body'], true );
+                        if ( isset( $response['status'] ) ) {
+                            if ( $response['status'] == 'OK' ) {
+                                // updated timestamp of the raw record
+                                $raw_record = get_option( 'zume_stats_raw_record' );
+                                $raw_record['timestamp'] = current_time( 'mysql' );
+                                update_option( 'zume_stats_raw_record', $raw_record );
 
-                    if ( isset( $response['status'] ) ) {
-                        if ( $response['status'] == 'OK' ) {
-                            // updated timestamp of the raw record
-                            $raw_record = get_option( 'zume_stats_raw_record' );
-                            $raw_record['timestamp'] = current_time( 'mysql' );
-                            update_option( 'zume_stats_raw_record', $raw_record );
+                                $error[] = get_option( 'zume_stats_raw_record', [] );
 
-                            $error[] = get_option( 'zume_stats_raw_record', [] );
+                            } elseif ( $response['status'] == 'Update_Needed' && isset( $response['raw_record'] ) ) {
+                                update_option( 'zume_stats_raw_record', $response['raw_record'] );
+                                $error[] = get_option( 'zume_stats_raw_record', [] );
 
-                        } elseif ( $response['status'] == 'Update_Needed' && isset( $response['raw_record'] ) ) {
-                            update_option( 'zume_stats_raw_record', $response['raw_record'] );
-                            $error[] = get_option( 'zume_stats_raw_record', [] );
+                            } else {
+                                // error
+                                dt_write_log( 'RESPONSE STATUS ERROR' );
+                                dt_write_log( $response );
 
+                                $error[] = [];
+                            }
                         } else {
                             // error
-                            dt_write_log( 'RESPONSE STATUS ERROR' );
+                            dt_write_log( 'RESPONSE STATUS NOT SET' );
                             dt_write_log( $response );
 
                             $error[] = [];
                         }
                     } else {
-                        // error
-                        dt_write_log( 'RESPONSE STATUS NOT SET' );
-                        dt_write_log( $response );
+                        dt_write_log( 'RESPONSE BODY ERROR' );
+                        dt_write_log( $result );
 
                         $error[] = [];
                     }
-                } else {
-                    dt_write_log( 'RESPONSE BODY ERROR' );
-                    dt_write_log( $result );
-
-                    $error[] = [];
                 }
             }
         }
