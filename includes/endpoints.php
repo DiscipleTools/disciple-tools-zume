@@ -88,8 +88,8 @@ class DT_Zume_Core_Endpoints
      // check owner exists
             if ( isset( $params['owner_raw_record']['zume_foreign_key'] ) && ! empty( $params['owner_raw_record']['zume_foreign_key'] ) ) {
                 dt_write_log( 'Owner' );
-                dt_write_log( $params['owner_raw_record']['zume_foreign_key'] );
-                dt_write_log( $params['owner_raw_record'] );
+//                dt_write_log( $params['owner_raw_record']['zume_foreign_key'] );
+//                dt_write_log( $params['owner_raw_record'] );
 
                 $members = [];
                 $owner_foreign_key = sanitize_key( wp_unslash( $params['owner_raw_record']['zume_foreign_key'] ) );
@@ -117,8 +117,8 @@ class DT_Zume_Core_Endpoints
             if ( isset( $params['coleaders'] ) && ! empty( $params['coleaders'] ) ) {
                 foreach ( $params['coleaders'] as $foreign_key => $raw_record ) {
                     dt_write_log( 'Coleader' );
-                    dt_write_log( $foreign_key );
-                    dt_write_log( $raw_record );
+//                    dt_write_log( $foreign_key );
+//                    dt_write_log( $raw_record );
 
                     $post_id = $this->get_id_from_zume_foreign_key( $foreign_key );
                     if ( ! $post_id ) {
@@ -145,8 +145,8 @@ class DT_Zume_Core_Endpoints
      // check group exists
             if ( isset( $params['group_raw_record']['key'] ) && ! empty( $params['group_raw_record']['key'] ) ) {
                 dt_write_log( 'Group' );
-                dt_write_log( $params['group_raw_record']['key'] );
-                dt_write_log( $params['group_raw_record'] );
+//                dt_write_log( $params['group_raw_record']['key'] );
+//                dt_write_log( $params['group_raw_record'] );
 
                 $zume_foreign_key = sanitize_key( wp_unslash( $params['group_raw_record']['foreign_key'] ) );
 
@@ -319,54 +319,63 @@ class DT_Zume_Core_Endpoints
             return false;
         }
 
-        $post_id = false;
-        $auto_create_location = dt_get_option( 'auto_location' );
-        $location_level_preference = dt_get_option( 'location_levels' );
-
-        // @todo note overwrite the $post_id at each check down the chain, so all is created in parent order, but returns post_id
-        if ( $country = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'country' ) ) {
-            // lookup country location
-
-            // auto create??
-        }
-
-
-        $country = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_user_record, 'country' );
-
-
-        // check for admin1 location post_id with country parent_id, or create admin1 post_id
-        // check for admin2 location post_id with country parent_id, or create admin1 post_id
-        // check for admin3 location post_id with country parent_id, or create admin1 post_id
-        // check for admin4 location post_id with country parent_id, or create admin1 post_id
-        // check for locality location post_id with country parent_id, or create admin1 post_id
-        // check for neighborhood location post_id with country parent_id, or create admin1 post_id
-
-        return $post_id;
+        return $this->find_relevant_parent_location( $raw_location );
     }
 
     public function parse_raw_group_record_for_location_id( $raw_group_record ) {
-        $raw_result_data = false;
-        // if get valid raw location data
-        // else get valid location components
-        // if valid location components, get raw location response
-        // else return no location id
-
-
-        // parse valid location data for location components
-        if ( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_result_data ) ) {
+        if ( ! isset( $raw_group_record['raw_location'] ) || ! isset( $raw_group_record['ip_raw_location'] ) ) {
             return false;
         }
 
-        $post_id = false;
-        // @todo note overwrite the $post_id at each check down the chain, so all is created in parent order, but returns post_id
+        if ( $raw_group_record['raw_location'] ) { // prioritize user provided location info
+            $raw_location = $raw_group_record['raw_location'];
+        } else {
+            $raw_location = $raw_group_record['ip_raw_location'];
+        }
 
-        // check for country location post_id, or create country location post_id
-        // check for admin1 location post_id with country parent_id, or create admin1 post_id
-        // check for admin2 location post_id with country parent_id, or create admin1 post_id
-        // check for admin3 location post_id with country parent_id, or create admin1 post_id
-        // check for admin4 location post_id with country parent_id, or create admin1 post_id
-        // check for locality location post_id with country parent_id, or create admin1 post_id
-        // check for neighborhood location post_id with country parent_id, or create admin1 post_id
+        if ( ! Disciple_Tools_Google_Geocode_API::check_valid_request_result( $raw_location ) ) { // test for valid raw location data
+            return false;
+        }
+
+        return $this->find_relevant_parent_location( $raw_location );
+    }
+
+    public function find_relevant_parent_location( $raw_location ) {
+        dt_write_log( __METHOD__ );
+        $post_id = false;
+        $auto_create_location = dt_get_option( 'auto_location' );
+        $auto_build_location_level = dt_get_option( 'location_levels' ); // auto build settings
+        $locations_result = Disciple_Tools_Locations::query_all_geocoded_locations(); // array of all locations
+        dt_write_log( $auto_build_location_level );
+        dt_write_log( $raw_location );
+        /**
+         * Loop through the required levels set by the auto create
+         */
+        foreach ( $auto_build_location_level as $key => $required ) {
+            if ( $required ) { // check if this level should be evaluated
+                // parse for the level component
+                $level = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, $key );
+                dt_write_log( $key );
+                dt_write_log( $level );
+                // see if location level already exists
+                $id = Disciple_Tools_Locations::does_location_exist( $locations_result, $level, $key );
+                if ( $id ) {
+                    $post_id = $id; // if id exists, pass it to post_id and move on
+                } elseif ( $auto_create_location ) { // auto create??
+                    $auto_build = Disciple_Tools_Locations::auto_build_location( $raw_location, 'raw' ); // build locations levels
+                    $locations_result = Disciple_Tools_Locations::query_all_geocoded_locations(); // rebuild locations list after new addition
+                    if ( 'OK' == $auto_build['status'] ?? false ) {
+                        $id = Disciple_Tools_Locations::does_location_exist( $locations_result, $level, $key ); // check again if location exists
+                        if ( $id ) {
+                            $post_id = $id; // if id exists, pass it to post_id and move on
+                        } else {
+                            dt_write_log( __METHOD__ . ' Failed to create and locate ' . $key ); // log but do nothing with failure
+                        }
+                    }
+                }
+            }
+            dt_write_log( $post_id );
+        }
 
         return $post_id;
     }
@@ -420,7 +429,7 @@ class DT_Zume_Core_Endpoints
         }
 
         // get or build location
-        $location_post_id = $this->parse_raw_user_record_for_location_id( $raw_record );
+        $location_post_id = $this->parse_raw_group_record_for_location_id( $raw_record );
         if ( $location_post_id ) {
             $fields['locations'] = [
                 "values" => [
