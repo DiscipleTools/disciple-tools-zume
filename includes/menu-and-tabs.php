@@ -48,7 +48,7 @@ class DT_Zume_Menu
      */
     public function register_menu()
     {
-        add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'dt_content' ], 'dashicons-admin-generic', 59 );
+        add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'dt_content' ], dt_svg_icon(), 100 );
         add_meta_box( 'site_link_system_extensions', 'Zúme Default Site', [ $this, 'meta_box_extensions' ], 'site_link_system', 'normal', 'low' );
     }
 
