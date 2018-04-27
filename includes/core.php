@@ -170,10 +170,6 @@ class DT_Zume_Core
     public static function get_site_details( $site_key ) {
         $keys = Site_Link_System::get_site_keys();
 
-        if ( ! isset( $keys[$site_key]['site1'] ) || ! isset( $keys[$site_key]['site2'] ) ) {
-            return new WP_Error( __METHOD__, 'Missing required site keys' );
-        }
-
         $site1 = $keys[$site_key]['site1'];
         $site2 = $keys[$site_key]['site2'];
 
