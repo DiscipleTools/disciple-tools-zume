@@ -49,6 +49,20 @@ class DT_Zume_Menu
     public function register_menu()
     {
         add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'dt_content' ], 'dashicons-admin-generic', 59 );
+        add_meta_box( 'site_link_system_extensions', 'Zúme Default Site', [ $this, 'meta_box_extensions' ], 'site_link_system', 'normal', 'low' );
+    }
+
+    public function meta_box_extensions() {
+        $current_key = get_option( 'zume_default_site' );
+        $keys = Site_Link_System::get_site_keys();
+        if ( ! isset( $keys[$current_key] ) ) {
+            ?>
+            You need to set the default Zume connection <a href="<?php echo admin_url() . 'admin.php?page=dt_zume' ?>">Set Connection</a>
+            <?php
+        } else
+        {
+            echo '<strong>' . $keys[$current_key]['label'] . '</strong> is the current Zume site link';
+        }
     }
 
     /**
@@ -181,6 +195,7 @@ class DT_Zume_Menu
                 <tr>
                     <td>
                         <select id="default-site" name="default-site">
+                            <option></option>
                             <?php foreach ($keys as $key => $value ) : ?>
                                 <option value="<?php echo esc_attr( $key ) ?>" <?php $current_key == $key ? print esc_attr( 'selected' ) : print '';  ?> >
                                     <?php echo esc_html( $value['label'] )?>
@@ -236,9 +251,10 @@ class DT_Zume_Menu
                     $result = DT_Zume_Core::remote_send( 'get_project_stats', $site['url'], $args );
                     if ( is_wp_error( $result ) || is_wp_error( $result['body'] ) ) {
                         dt_write_log( $result );
-                        $error[] = get_option( 'zume_stats_raw_record', [] );
+                        $error[] = $result;
+
                     }
-                    if ( isset( $result['body'] ) ) {
+                    elseif ( isset( $result['body'] ) ) {
                         $response = json_decode( $result['body'], true );
 
                         if ( isset( $response['status'] ) ) {
