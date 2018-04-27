@@ -57,11 +57,10 @@ class DT_Zume_Menu
         $keys = Site_Link_System::get_site_keys();
         if ( ! isset( $keys[$current_key] ) ) {
             ?>
-            You need to set the default Zume connection <a href="<?php echo admin_url() . 'admin.php?page=dt_zume' ?>">Set Connection</a>
+            You need to set the default Zume connection <a href="<?php echo esc_url( admin_url() ) . 'admin.php?page=dt_zume' ?>">Set Connection</a>
             <?php
-        } else
-        {
-            echo '<strong>' . $keys[$current_key]['label'] . '</strong> is the current Zume site link';
+        } else {
+            echo '<strong>' . esc_attr( $keys[$current_key]['label'] ) . '</strong> is the current Zume site link';
         }
     }
 
