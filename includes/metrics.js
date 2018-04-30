@@ -32,16 +32,16 @@ function show_zume_project(){
             <div class="cell">
                 <div class="grid-x callout">
                     <div class="medium-3 cell center">
-                    <h4>Trained Groups<br><span id="group_numbers"></span></h4>
+                    <h4>Trained Groups<br><span class="trained_groups"></span></h4>
                     </div>
                     <div class="medium-3 cell center">
-                    <h4>Trained People<br><span id="people_numbers"></span></h4>
+                    <h4>Training Time<br><span id="hours_trained_group"></span> hours</h4>
+                    </div>
+                    <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
+                    <h4>Trained People<br><span class="trained_people"></span></h4>
                     </div>
                     <div class="medium-3 cell center">
-                    <h4>Group Training<br><span id="hours_trained"></span> hours</h4>
-                    </div>
-                    <div class="medium-3 cell center">
-                    <h4>Countries<br><span id="country_numbers"></span></h4>
+                    <h4>Training Time<br><span id="hours_trained_per_person"></span> hours</h4>
                     </div>
                 </div>
             </div>
@@ -58,7 +58,7 @@ function show_zume_project(){
                     <h4>Engaged Groups<br><span id="engaged_groups"></span></h4>
                     </div>
                     <div class="medium-3 cell center">
-                    <h4>Trained Groups<br><span id="trained_groups"></span></h4>
+                    <h4>Trained Groups<br><span class="trained_groups"></span></h4>
                     </div>
                     <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
                     <h4>Active Groups<br><span id="active_groups"></span></h4>
@@ -78,33 +78,46 @@ function show_zume_project(){
                     <h4>Engaged People<br><span id="engaged_people"></span></h4>
                     </div>
                     <div class="medium-3 cell center">
-                    <h4>Trained People<br><span id="trained_people"></span></h4>
+                    <h4>Trained People<br><span class="trained_people"></span></h4>
                     </div>
                     <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
                     <h4>Active People<br><span id="active_people" ></span></h4>
                     </div>
                 </div>
             </div>
-            
+            <div class="cell center">
+                <span class="section-subheader" >Activity in the Last 30 Days</span>
+                <div id="combo_active" style="width: 100%; height: 500px;"></div>
+            </div>
+            <div class="cell center"><hr>
+                <div class="grid-x">
+                    <div class="cell center medium-6">
+                        <span class="section-subheader" >Languages by User</span>
+                        <div id="people_languages" style="width: 100%; height: 300px"></div>
+                    </div>
+                    <div class="cell center medium-6">
+                        <span class="section-subheader" >Logins by Month</span>
+                        <div id="chart_line_logins" style="width: 100%; height: 300px"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         `)
 
     // Add hero stats
     let hero = wpApiZumeMetrics.zume_stats.hero_stats
-    jQuery('#group_numbers').append( hero.trained_groups )
-    jQuery('#people_numbers').append( hero.trained_people )
-    jQuery('#hours_trained').append( hero.hours_trained_as_group )
-    jQuery('#country_numbers').append( hero.total_countries )
+    jQuery('#hours_trained_group').append( numberWithCommas( hero.hours_trained_as_group ) )
+    jQuery('#hours_trained_per_person').append( numberWithCommas( hero.hours_trained_per_person ) )
 
-    jQuery('#registered_groups').append( hero.registered_groups )
-    jQuery('#engaged_groups').append( hero.engaged_groups )
-    jQuery('#trained_groups').append( hero.trained_groups )
-    jQuery('#active_groups').append( hero.active_groups )
+    jQuery('#registered_groups').append( numberWithCommas( hero.registered_groups ) )
+    jQuery('#engaged_groups').append( numberWithCommas( hero.engaged_groups ) )
+    jQuery('.trained_groups').append( numberWithCommas( hero.trained_groups ) )
+    jQuery('#active_groups').append( numberWithCommas( hero.active_groups ) )
 
-    jQuery('#registered_people').append( hero.registered_people )
-    jQuery('#engaged_people').append( hero.engaged_people )
-    jQuery('#trained_people').append( hero.trained_people )
-    jQuery('#active_people').append( hero.active_people )
+    jQuery('#registered_people').append( numberWithCommas( hero.registered_people ) )
+    jQuery('#engaged_people').append( numberWithCommas( hero.engaged_people ) )
+    jQuery('.trained_people').append( numberWithCommas( hero.trained_people ) )
+    jQuery('#active_people').append( numberWithCommas( hero.active_people ) )
 
     // build charts
     google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
@@ -112,6 +125,9 @@ function show_zume_project(){
     google.charts.setOnLoadCallback(drawWorld);
     google.charts.setOnLoadCallback(drawComboTrendsGroups);
     google.charts.setOnLoadCallback(drawComboTrendsPeople);
+    google.charts.setOnLoadCallback(drawComboActive);
+    google.charts.setOnLoadCallback(drawLanguagesChart);
+    google.charts.setOnLoadCallback(drawLineChartLogins);
 
     function drawWorld() {
 
@@ -126,35 +142,75 @@ function show_zume_project(){
 
     function drawComboTrendsGroups() {
         // Some raw data (not necessarily accurate)
-        var data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.groups_progress_by_month);
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.groups_progress_by_month);
 
-        var options = {
+        let options = {
             hAxis: {title: 'Months' },
             // vAxis: { scaleType: 'mirrorLog' },
             seriesType: 'bars',
             chartArea:{left: '10%',top:'5px',width:'75%',height:'75%'},
-            series: {4: {type: 'line'}},
+            series: {3: {type: 'line'}},
             colors:['lightgreen', 'limegreen', 'green', 'darkgreen'],
         };
 
-        var chart = new google.visualization.ComboChart(document.getElementById('combo_trend_groups'));
+        let chart = new google.visualization.ComboChart(document.getElementById('combo_trend_groups'));
         chart.draw(data, options);
     }
 
     function drawComboTrendsPeople() {
         // Some raw data (not necessarily accurate)
-        var data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.people_progress_by_month);
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.people_progress_by_month);
 
-        var options = {
+        let options = {
             hAxis: {title: 'Months'},
             seriesType: 'bars',
             chartArea:{left: '10%',top:'5px',width:'75%',height:'75%'},
-            series: {4: {type: 'line'}},
+            series: {3: {type: 'line'}},
             colors:['lightblue', 'skyblue', 'blue', 'darkblue'],
         };
 
-        var chart = new google.visualization.ComboChart(document.getElementById('combo_trend_people'));
+        let chart = new google.visualization.ComboChart(document.getElementById('combo_trend_people'));
         chart.draw(data, options);
+    }
+
+    function drawComboActive() {
+        // Some raw data (not necessarily accurate)
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.active_by_month);
+
+        let options = {
+            hAxis: {title: 'Months'},
+            seriesType: 'bars',
+            chartArea:{left: '10%',top:'5px',width:'75%',height:'75%'},
+            series: {2: {type: 'line'}},
+            colors:['limegreen', 'skyblue', 'darkblue'],
+        };
+
+        let chart = new google.visualization.ComboChart(document.getElementById('combo_active'));
+        chart.draw(data, options);
+    }
+
+    function drawLanguagesChart() {
+        let chartData = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.people_languages );
+        let options = {
+            bars: 'horizontal',
+            chartArea: {
+                left: '10%',
+                top: '10px',
+                width: "80%",
+                height: "90%" },
+            pieHole: 0.4,
+        }
+
+        let chart = new google.visualization.PieChart(document.getElementById('people_languages'));
+        chart.draw(chartData, options);
+    }
+
+    function drawLineChartLogins() {
+        let chartData = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.logins_by_month );
+        let options = { legend: { position: 'bottom' } };
+        let chart = new google.visualization.LineChart( document.getElementById('chart_line_logins') );
+
+        chart.draw(chartData, options);
     }
 
     new Foundation.Reveal(jQuery('#zume-project-legend'));
@@ -212,25 +268,24 @@ function show_zume_groups(){
             </div>
             <div class="cell center">
             <hr>
-                <span class="section-subheader">Location of trained groups</span>
-                <div id="trained_groups_coordinates" style="width: 100%; height: 400px;"></div>
+                <p class="section-subheader" >Groups Trends</p>
+                <div id="combo_trend_groups" style="width: 100%; height: 500px;"></div>
             </div>
-            
         </div>
         `)
 
     // Add hero stats
     let hero = wpApiZumeMetrics.zume_stats.hero_stats
-    jQuery('#registered_groups').append( hero.registered_groups )
-    jQuery('#engaged_groups').append( hero.engaged_groups )
-    jQuery('#trained_groups').append( hero.trained_groups )
-    jQuery('#active_groups').append( hero.active_groups )
+    jQuery('#registered_groups').append( numberWithCommas( hero.registered_groups ) )
+    jQuery('#engaged_groups').append( numberWithCommas( hero.engaged_groups ) )
+    jQuery('#trained_groups').append( numberWithCommas( hero.trained_groups ) )
+    jQuery('#active_groups').append( numberWithCommas( hero.active_groups ) )
 
     google.charts.load('current', {packages: ['corechart', 'bar']});
     google.charts.setOnLoadCallback(drawMembersPerGroup)
     google.charts.setOnLoadCallback(drawCurrentSessionChart)
-    google.charts.setOnLoadCallback(drawWorld);
     google.charts.setOnLoadCallback(drawSessionsCompleted)
+    google.charts.setOnLoadCallback(drawComboTrendsGroups)
 
     function drawMembersPerGroup() {
 
@@ -309,12 +364,20 @@ function show_zume_groups(){
         chart.draw(data, options);
     }
 
-    function drawWorld() {
-        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.trained_groups_coordinates)
+    function drawComboTrendsGroups() {
+        // Some raw data (not necessarily accurate)
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.groups_progress_by_month);
+
         let options = {
-            tooltip: {trigger: 'none'}
+            hAxis: {title: 'Months' },
+            // vAxis: { scaleType: 'mirrorLog' },
+            seriesType: 'bars',
+            chartArea:{left: '10%',top:'5px',width:'75%',height:'75%'},
+            series: {3: {type: 'line'}},
+            colors:['lightgreen', 'limegreen', 'green', 'darkgreen'],
         };
-        let chart = new google.visualization.GeoChart(document.getElementById('trained_groups_coordinates'));
+
+        let chart = new google.visualization.ComboChart(document.getElementById('combo_trend_groups'));
         chart.draw(data, options);
     }
 
@@ -355,50 +418,50 @@ function show_zume_people(){
                             </div>
                         </div>
                     </div>
-                <div class="cell center">
-                    <span class="section-subheader">People Trends</span>
-                    <div id="combo_trend_people" style="width: 100%; height: 400px;"></div>
+                    
+                    <div class="cell center">
+                        <span class="section-subheader">People Trends</span>
+                        <div id="combo_trend_people" style="width: 100%; height: 400px;"></div>
+                        <hr>
+                    </div>
+                    <div class="cell center">
+                        <span class="section-subheader">Language Users in Zúme</span>
+                        <div id="people_languages" style="height: 500px; margin: 0 1em; "></div>
+                    </div>
+                    <div class="cell center">
                     <hr>
-                </div>
-                <div class="cell center">
-                    <span class="section-subheader">Language Users in Zúme</span>
-                    <div id="people_languages" style="height: 500px; margin: 0 1em; "></div>
-                </div>
-                <div class="cell center">
-                    <span class="section-subheader center"></span>
-                </div>
-                <div class="cell">
-                    <div id="table_div"></div>
-                </div>
-        </div>
+                        <span class="section-subheader" >Logins by Month</span>
+                        <div id="chart_line_logins" style="width: 100%; height: 500px"></div>
+                    </div>
+            </div>
         `)
 
     let hero = wpApiZumeMetrics.zume_stats.hero_stats
-    jQuery('#registered_people').append( hero.registered_people )
-    jQuery('#engaged_people').append( hero.engaged_people )
-    jQuery('#trained_people').append( hero.trained_people )
-    jQuery('#active_people').append( hero.active_people )
+    jQuery('#registered_people').append( numberWithCommas( hero.registered_people ) )
+    jQuery('#engaged_people').append( numberWithCommas( hero.engaged_people ) )
+    jQuery('#trained_people').append( numberWithCommas( hero.trained_people ) )
+    jQuery('#active_people').append( numberWithCommas( hero.active_people ) )
 
-    google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
+    google.charts.load('current', {'packages':['corechart', 'treemap']});
 
-    // google.charts.setOnLoadCallback(drawTable);
     google.charts.setOnLoadCallback(drawComboTrendsPeople);
     google.charts.setOnLoadCallback(drawLanguagesChart)
+    google.charts.setOnLoadCallback(drawLineChartLogins);
 
 
     function drawComboTrendsPeople() {
         // Some raw data (not necessarily accurate)
-        var data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.people_progress_by_month);
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.people_progress_by_month);
 
-        var options = {
+        let options = {
             hAxis: {title: 'Months'},
             seriesType: 'bars',
             chartArea:{left: '10%',top:'5px',width:'75%',height:'75%'},
-            series: {4: {type: 'line'}},
+            series: {3: {type: 'line'}},
             colors:['lightblue', 'skyblue', 'blue', 'darkblue'],
         };
 
-        var chart = new google.visualization.ComboChart(document.getElementById('combo_trend_people'));
+        let chart = new google.visualization.ComboChart(document.getElementById('combo_trend_people'));
         chart.draw(data, options);
     }
 
@@ -418,11 +481,13 @@ function show_zume_people(){
         chart.draw(chartData, options);
     }
 
-    // function drawTable() {
-    //     let data = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.people_info );
-    //     let table = new google.visualization.Table(document.getElementById('table_div'));
-    //     table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-    // }
+    function drawLineChartLogins() {
+        let chartData = google.visualization.arrayToDataTable( wpApiZumeMetrics.zume_stats.logins_by_month );
+        let options = { legend: { position: 'bottom' } };
+        let chart = new google.visualization.LineChart( document.getElementById('chart_line_logins') );
+
+        chart.draw(chartData, options);
+    }
 
     new Foundation.Reveal(jQuery('#zume-project-legend'));
 
@@ -444,16 +509,8 @@ function show_zume_locations(){
         <div class="medium reveal" id="zume-project-legend" data-reveal>`+ legend() +` <button class="close-button" data-close aria-label="Close modal" type="button">
                         <span aria-hidden="true">&times;</span>
                     </button></div>
-        
-        <div id="zume-locations" style="height: 500px; margin: 0 1em 1.2em; "></div>
-        <div class="grid-x grid-padding-x">
-            <div class="cell small-4"><span class="section-subheader">Top Countries</span><br><div id="drawTopCountries"></div></div>
-            <div class="cell small-4"><span class="section-subheader">Newest Countries</span><br><div id="drawNewestCountries"></div></div>
-            <div class="cell small-4"><span class="section-subheader">Newest Groups by Country</span><br><div id="drawNewestGroupsByCountry"></div></div>
-        </div>
         <div class="grid-x">
             <div class="cell center">
-                <hr>
                 <span class="section-subheader">U.S.A</span>
                 <div id="zume-region-usa" style="height: 500px; margin: 1.2em 1em; "></div>
             </div>
@@ -477,83 +534,29 @@ function show_zume_locations(){
                 <span class="section-subheader">South America</span>
                 <div id="zume-region-americas" style="height: 500px; margin: 1.2em 1em; "></div>
             </div>
+            <div class="cell center">
+                <hr>
+                <p><span class="section-subheader">Groups and Individuals by Country</span></p>
+            </div>
+            <div class="cell">
+                <div class="grid-x grid-padding-x">
+                    <div class="cell medium-6">
+                        <div id="country_list_by_group"></div>
+                    </div>
+                    <div class="cell medium-6">
+                        <div id="country_list_by_people"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         
     `)
 
     google.charts.load('current', {'packages':['geochart', 'table'], 'mapsApiKey': wpApiZumeMetrics.map_key });
 
-    google.charts.setOnLoadCallback(drawTopCountries);
-    google.charts.setOnLoadCallback(drawNewestCountries);
-    google.charts.setOnLoadCallback(drawNewestGroupsByCountry);
-    google.charts.setOnLoadCallback(drawWorld);
     google.charts.setOnLoadCallback(drawRegions);
-
-
-    function drawTopCountries() {
-        let data = new google.visualization.DataTable();
-        data.addColumn('string', 'Country');
-        data.addColumn('number', 'Groups');
-        data.addColumn('number', 'Users');
-        data.addRows([
-            ['United States', 100, 400],
-            ['England', 100, 400],
-            ['Russia', 100, 400],
-            ['Turkey', 100, 400],
-            ['Venezuala', 100, 400],
-        ]);
-
-        let table = new google.visualization.Table(document.getElementById('drawTopCountries'));
-
-        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-    }
-
-    function drawNewestCountries() {
-        let data = new google.visualization.DataTable();
-        data.addColumn('string', 'Country');
-        data.addColumn('date', 'Date');
-        data.addRows([
-            ['Venezuala', new Date(2018, 2, 15)],
-            ['Turkey', new Date(2018, 1, 15)],
-            ['Russia', new Date(2017, 12, 15)],
-            ['England', new Date(2017, 10, 15)],
-            ['United States', new Date(2017, 2, 15)],
-        ]);
-
-        let table = new google.visualization.Table(document.getElementById('drawNewestCountries'));
-
-        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-    }
-
-    function drawNewestGroupsByCountry() {
-        let data = new google.visualization.DataTable();
-        data.addColumn('string', 'Country');
-        data.addColumn('date', 'Date');
-        data.addRows([
-            ['Venezuala', new Date(2018, 2, 15)],
-            ['Turkey', new Date(2018, 1, 15)],
-            ['Russia', new Date(2017, 12, 15)],
-            ['England', new Date(2017, 10, 15)],
-            ['United States', new Date(2017, 2, 15)],
-        ]);
-
-        let table = new google.visualization.Table(document.getElementById('drawNewestGroupsByCountry'));
-
-        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-    }
-
-    function drawWorld() {
-
-        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.group_coordinates)
-
-        let options = {
-            tooltip: {trigger: 'none'}
-        };
-
-        let chart = new google.visualization.GeoChart(document.getElementById('zume-locations'));
-
-        chart.draw(data, options);
-    }
+    google.charts.setOnLoadCallback(drawGroupCountryTable);
+    google.charts.setOnLoadCallback(drawPeopleCountryTable);
 
     function drawRegions() {
 
@@ -596,7 +599,36 @@ function show_zume_locations(){
             region: '005',
             tooltip: {trigger: 'none'}
         });
+    }
 
+    function drawGroupCountryTable() {
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.country_list_by_group);
+        let table = new google.visualization.Table( document.getElementById('country_list_by_group') );
+        table.draw(data, {
+            width: '100%',
+            height: '100%',
+            sort: 'enable',
+            sortColumn: 1,
+            sortAscending: false,
+            page: 'enable',
+            pageSize: 20,
+            pagingButtons: 'auto',
+        });
+    }
+
+    function drawPeopleCountryTable() {
+        let data = google.visualization.arrayToDataTable(wpApiZumeMetrics.zume_stats.country_list_by_people);
+        let table = new google.visualization.Table( document.getElementById('country_list_by_people') );
+        table.draw(data, {
+            width: '100%',
+            height: '100%',
+            sort: 'enable',
+            sortColumn: 1,
+            sortAscending: false,
+            page: 'enable',
+            pageSize: 20,
+            pagingButtons: 'auto',
+        });
     }
 
     new Foundation.Reveal(jQuery('#zume-project-legend'));
@@ -657,4 +689,12 @@ function refresh_stats_data( page ){
             jQuery("#errors").append(err.responseText)
         })
 
+}
+
+function numberWithCommas(x) {
+    x = x.toString();
+    let pattern = /(-?\d+)(\d{3})/;
+    while (pattern.test(x))
+        x = x.replace(pattern, "$1,$2");
+    return x;
 }
