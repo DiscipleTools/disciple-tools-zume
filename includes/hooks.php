@@ -148,6 +148,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                 <div class="tabs-panel" id="map">
                     <?php
                     $raw_location = [];
+                    $show = true;
                     if ( isset( $record['zume_raw_location'] ) && ! empty( $record['zume_raw_location'] ) ) {
                         $raw_location = $record['zume_raw_location'];
                         $source = 'from user';
@@ -155,30 +156,33 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                         $raw_location = $record['zume_raw_location_from_ip'];
                         $source = 'from ip address';
                     } else {
-
+                        $show = false;
                     }
-                    $lat = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lat' );
-                    $lng = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lng' );
-                    $address = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'formatted_address' );
 
-                    if ( empty( $lng ) || empty( $lat ) ) :
-                        echo '<p>'. esc_html__( 'No map info gathered.' ) .'</p>';
-                    else :
-                        ?>
+                    if ( $show ) {
+                        $lat = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lat' );
+                        $lng = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lng' );
+                        $address = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'formatted_address' );
 
-                        <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
-                        <a id="map-reveal" data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/></a>
-                        <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
+                        if ( empty( $lng ) || empty( $lat ) ) :
+                            echo '<p>'. esc_html__( 'No map info gathered.' ) .'</p>';
+                        else :
+                            ?>
 
-                        <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
-                            <img  src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x550&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/>
-                            <button class="close-button" data-close aria-label="Close modal" type="button">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
+                            <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
+                            <a id="map-reveal" data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/></a>
+                            <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
 
-                    <?php
-                    endif;
+                            <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
+                                <img  src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x550&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/>
+                                <button class="close-button" data-close aria-label="Close modal" type="button">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+
+                        <?php
+                        endif;
+                    }
                     ?>
                 </div>
 
@@ -380,6 +384,7 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                 <div class="tabs-panel" id="map">
                     <?php
                     $raw_location = [];
+                    $show = true;
                     if ( isset( $record['raw_location'] ) && ! empty( $record['raw_location'] ) ) {
                         $raw_location = $record['raw_location'];
                         $source = 'from user';
@@ -387,33 +392,54 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                         $raw_location = $record['ip_raw_location'];
                         $source = 'from ip address';
                     } else {
-
+                         $show = false;
                     }
-                    $lat = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lat' );
-                    $lng = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lng' );
-                    $address = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'formatted_address' );
 
-                    if ( empty( $lng ) || empty( $lat ) ) :
-                        echo '<p>'. esc_html__( 'No map info gathered.' ) .'</p>';
-                    else :
-                        ?>
+                    if ( $show ) {
+                        $lat = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lat' );
+                        $lng = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'lng' );
+                        $address = Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw_location, 'formatted_address' );
 
-                        <p><?php echo esc_html( $address ) ?> <span class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
-                        <a id="map-reveal" data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/></a>
-                        <p class="center"><a data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a></p>
+                        if ( empty( $lng ) || empty( $lat ) ) :
+                            echo '<p>' . esc_html__( 'No map info gathered.' ) . '</p>';
+                        else :
+                            ?>
 
-                        <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>" data-reveal>
-                            <img  src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x550&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/>
-                            <button class="close-button" data-close aria-label="Close modal" type="button">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
+                            <p><?php echo esc_html( $address ) ?> <span
+                                        class="text-small grey">( <?php echo esc_html( $source ) ?> )</span></p>
+                            <a id="map-reveal" data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><img
+                                        src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=6&size=640x640&scale=1&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/></a>
+                            <p class="center"><a
+                                        data-open="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"><?php esc_html_e( 'click to show large map' ) ?></a>
+                            </p>
 
-                    <?php
-                    endif;
+                            <div class="reveal large" id="<?php echo esc_attr( md5( $address ?? 'none' ) ) ?>"
+                                 data-reveal>
+                                <img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&zoom=5&size=640x550&scale=2&markers=color:red|<?php echo esc_attr( $lat ) . ',' . esc_attr( $lng ) ?>&key=<?php echo esc_attr( Disciple_Tools_Google_Geocode_API::key() ); ?>"/>
+                                <button class="close-button" data-close aria-label="Close modal" type="button">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+
+                        <?php
+                        endif;
+                    }
                     ?>
             </div>
             <br clear="all" />
+
+            <!-- Raw Tab-->
+            <?php if ( user_can( get_current_user_id(), 'manage_dt' ) ) : ?>
+                <div class="tabs-panel" id="raw" style="width: 100%;height: 300px;overflow-y: scroll;overflow-x:hidden;">
+                    <?php
+                    if ( $record ) {
+                        foreach ( $record as $key => $value ) {
+                            echo '<strong>' . esc_attr( $key ) . ': </strong>' . esc_attr( maybe_serialize( $value ) ) . '<br>';
+                        }
+                    }
+                    ?>
+                </div>
+            <?php endif; ?>
 
             <script>
                 jQuery(document).ready(function(){

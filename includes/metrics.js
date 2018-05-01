@@ -34,15 +34,16 @@ function show_zume_project(){
                     <div class="medium-3 cell center">
                     <h4>Trained Groups<br><span class="trained_groups"></span></h4>
                     </div>
-                    <div class="medium-3 cell center">
-                    <h4>Training Time<br><span id="hours_trained_group"></span> hours</h4>
-                    </div>
                     <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
                     <h4>Trained People<br><span class="trained_people"></span></h4>
                     </div>
-                    <div class="medium-3 cell center">
-                    <h4>Training Time<br><span id="hours_trained_per_person"></span> hours</h4>
+                    <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
+                    <h4>Countries<br><span id="total_countries"></span></h4>
                     </div>
+                    <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
+                    <h4>Translations<br><span id="total_languages"></span></h4>
+                    </div>
+                    
                 </div>
             </div>
             <div class="cell center">
@@ -61,7 +62,7 @@ function show_zume_project(){
                     <h4>Trained Groups<br><span class="trained_groups"></span></h4>
                     </div>
                     <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
-                    <h4>Active Groups<br><span id="active_groups"></span></h4>
+                    <h4>Total Training<br><span id="hours_trained_group"></span> hours</h4>
                     </div>
                 </div>
             </div>
@@ -81,7 +82,7 @@ function show_zume_project(){
                     <h4>Trained People<br><span class="trained_people"></span></h4>
                     </div>
                     <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
-                    <h4>Active People<br><span id="active_people" ></span></h4>
+                    <h4>Total Training<br><span id="hours_trained_per_person"></span> hours</h4>
                     </div>
                 </div>
             </div>
@@ -108,6 +109,8 @@ function show_zume_project(){
     let hero = wpApiZumeMetrics.zume_stats.hero_stats
     jQuery('#hours_trained_group').append( numberWithCommas( hero.hours_trained_as_group ) )
     jQuery('#hours_trained_per_person').append( numberWithCommas( hero.hours_trained_per_person ) )
+    jQuery('#total_countries').append( numberWithCommas( hero.total_countries ) )
+    jQuery('#total_languages').append( numberWithCommas( hero.total_languages ) )
 
     jQuery('#registered_groups').append( numberWithCommas( hero.registered_groups ) )
     jQuery('#engaged_groups').append( numberWithCommas( hero.engaged_groups ) )
@@ -229,6 +232,7 @@ function show_zume_groups(){
 
     chartDiv.empty().html(`
         <span class="section-header">`+ wpApiZumeMetrics.translations.zume_groups +`</span>
+        <span style="float:right; font-size:1.5em;color:#3f729b;"><a data-open="zume-project-legend"><i class="fi-info"></i></a></span>
         <div class="medium reveal" id="zume-project-legend" data-reveal>`+ legend() +` <button class="close-button" data-close aria-label="Close modal" type="button">
                         <span aria-hidden="true">&times;</span>
                     </button></div>
@@ -247,7 +251,7 @@ function show_zume_groups(){
                     <h4>Trained Groups<br><span id="trained_groups"></span></h4>
                     </div>
                     <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
-                    <h4>Active Groups<br><span id="active_groups"></span></h4>
+                    <h4>Recently Active<br><span id="active_groups"></span></h4>
                     </div>
                 </div>
             </div>
@@ -414,7 +418,7 @@ function show_zume_people(){
                             <h4>Trained People<br><span id="trained_people"></span></h4>
                             </div>
                             <div class="medium-3 cell center" style="border-left: 1px solid #ccc">
-                            <h4>Active People<br><span id="active_people" ></span></h4>
+                            <h4>Recently Active<br><span id="active_people" ></span></h4>
                             </div>
                         </div>
                     </div>
@@ -647,6 +651,8 @@ function legend() {
             <dt>Trained</dt><dd>Trained groups and people have been through the entire Zúme training.</dd>
             <dt>Active</dt><dd>Active groups and people have finished a session in the last 30 days. Active in month charts measure according to the month listed. It is the same 'active' behavior, but broken up into different time units.</dd>
             <dt>Hours of Training</dt><dd>Hours of completed sessions for groups or people.</dd>
+            <dt>Countries</dt><dd>In the overview page, "Countries" counts number of countries with trained groups.</dd>
+            <dt>Translations</dt><dd>Translations counts the number of translations installed in ZúmeProject.com.</dd>
             </dl>`
 }
 
