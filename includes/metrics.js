@@ -1,6 +1,4 @@
 jQuery(document).ready(function() {
-    console.log(wpApiZumeMetrics.zume_stats)
-
     if('#zume_project' === window.location.hash) {
         show_zume_project()
     }

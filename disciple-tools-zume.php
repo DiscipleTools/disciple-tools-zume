@@ -93,7 +93,6 @@ class DT_Zume {
         require_once( 'includes/endpoints.php' );
         require_once( 'includes/hooks.php' );
         DT_Zume_Hooks::instance();
-        require_once( 'includes/metrics.php' );
         require_once( 'includes/menu-and-tabs.php' );
         require_once( 'includes/tables.php' );
 
