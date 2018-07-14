@@ -533,7 +533,7 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
     }
 
     public function __construct() {
-        add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 10 );
+        add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 5 );
         add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 999 );
         add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data' ] );
     }

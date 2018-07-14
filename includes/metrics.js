@@ -645,7 +645,7 @@ function legend() {
     return `<h2>Chart Legend</h2><hr>
             <dl>
             <dt>Registered</dt><dd>Groups or people who have registered on Zumeproject.com</dd>
-            <dt>Engaged</dt><dd>Groups or people who have registered on Zumeproject.com</dd>
+            <dt>Engaged</dt><dd>Groups or people who completed at least one session.</dd>
             <dt>Trained</dt><dd>Trained groups and people have been through the entire Zúme training.</dd>
             <dt>Active</dt><dd>Active groups and people have finished a session in the last 30 days. Active in month charts measure according to the month listed. It is the same 'active' behavior, but broken up into different time units.</dd>
             <dt>Hours of Training</dt><dd>Hours of completed sessions for groups or people.</dd>
