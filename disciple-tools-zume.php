@@ -225,8 +225,7 @@ register_deactivation_hook( __FILE__, [ 'DT_Zume', 'deactivation' ] );
 /**
  * Admin alert for when Disciple Tools Theme is not available
  */
-function dt_zume_no_disciple_tools_theme_found()
-{
+function dt_zume_no_disciple_tools_theme_found() {
     ?>
     <div class="notice notice-error">
         <p><?php esc_html_e( "'Disciple Tools - Zume' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or deactivate 'Disciple Tools - Zume' plugin.", "dt_zume" ); ?></p>

@@ -19,8 +19,7 @@ class DT_Zume_Core_Endpoints
 {
     private static $_instance = null;
 
-    public static function instance()
-    {
+    public static function instance() {
         if ( is_null( self::$_instance ) ) {
             self::$_instance = new self();
         }
@@ -33,19 +32,19 @@ class DT_Zume_Core_Endpoints
      * @access  public
      * @since   0.1.0
      */
-    public function __construct()
-    {
+    public function __construct() {
         add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
     } // End __construct()
 
-    public function add_api_routes()
-    {
+    public function add_api_routes() {
         $version = '1';
         $public_namespace = 'dt-public/v' . $version;
         $private_namespace = 'dt/v' . $version;
 
         register_rest_route(
-            $public_namespace, '/zume/session_complete_transfer', [
+            $public_namespace,
+            '/zume/session_complete_transfer',
+            [
                 [
                 'methods'  => WP_REST_Server::CREATABLE,
                 'callback' => [ $this, 'session_complete_transfer' ],
@@ -54,7 +53,9 @@ class DT_Zume_Core_Endpoints
         );
 
         register_rest_route(
-            $public_namespace, '/zume/three_month_plan_submitted', [
+            $public_namespace,
+            '/zume/three_month_plan_submitted',
+            [
             [
             'methods'  => WP_REST_Server::CREATABLE,
             'callback' => [ $this, 'three_month_plan_submitted' ],
@@ -66,7 +67,9 @@ class DT_Zume_Core_Endpoints
          * Charts and Reports
          */
         register_rest_route(
-            $private_namespace, '/zume/reset_zume_stats', [
+            $private_namespace,
+            '/zume/reset_zume_stats',
+            [
                [
                    'methods'  => WP_REST_Server::READABLE,
                    'callback' => [ $this, 'reset_zume_stats' ],
@@ -82,7 +85,11 @@ class DT_Zume_Core_Endpoints
 
         $site_key = Site_Link_System::verify_transfer_token( $params['transfer_token'] );
         if ( ! is_wp_error( $site_key ) && $site_key ) {
-            $added = [ 'group' => 0, 'owner' => 0, 'coleaders' => 0 ];
+            $added = [
+            'group' => 0,
+            'owner' => 0,
+            'coleaders' => 0
+            ];
             $errors = [];
 
      // check owner exists
@@ -469,8 +476,7 @@ class DT_Zume_Core_Endpoints
         }
     }
 
-    public static function can_view( $report_name, $user_id )
-    {
+    public static function can_view( $report_name, $user_id ) {
         // TODO decide on permission strategy for reporting
         // Do we hardwire permissions to reports to the roles of a person?
         // Do we set up a permission assignment tool in the config area, so that a group could assign reports to a role
@@ -505,7 +511,7 @@ class DT_Zume_Core_Endpoints
         // check for nulls and build array for searching
         switch ( $type ) {
             case 'google_result': // this is a raw google geocoding result
-                if ( ! is_null( $location_data ) && isset( $location_data['status'] ) && ( 'OK' == $location_data['status'] ?? ''  ) ) {
+                if ( ! is_null( $location_data ) && isset( $location_data['status'] ) && ( 'OK' == $location_data['status'] ?? '' ) ) {
                     $address_components = $location_data['results'][0]['address_components'];
                     $raw_google_response = $location_data;
                 }

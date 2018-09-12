@@ -11,8 +11,7 @@ class DT_Zume_Hooks
 
     private static $_instance = null;
 
-    public static function instance()
-    {
+    public static function instance() {
         if ( is_null( self::$_instance ) ) {
             self::$_instance = new self();
         }
@@ -22,8 +21,7 @@ class DT_Zume_Hooks
     /**
      * Build hook classes
      */
-    public function __construct()
-    {
+    public function __construct() {
         new DT_Zume_Hooks_User();
         new DT_Zume_Hooks_Groups();
         new DT_Zume_Hooks_Metrics();
@@ -37,8 +35,7 @@ class DT_Zume_Hooks
  */
 abstract class DT_Zume_Hooks_Base
 {
-    public function __construct()
-    {
+    public function __construct() {
     }
 }
 
@@ -118,7 +115,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                             <?php esc_html_e( 'Language' ) ?>:
                         </dt>
                         <dd>
-                            <?php echo  $record['zume_language'] ? esc_html( strtoupper( $record['zume_language'] ) ) : esc_html__( 'Unknown' ); ?>
+                            <?php echo $record['zume_language'] ? esc_html( strtoupper( $record['zume_language'] ) ) : esc_html__( 'Unknown' ); ?>
                         </dd>
                     <?php endif; ?>
 
@@ -180,7 +177,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                                 </button>
                             </div>
 
-                        <?php
+                            <?php
                         endif;
                     }
                     ?>
@@ -201,7 +198,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
             </div>
         <br clear="all" />
 
-        <?php
+            <?php
         endif;
 
     }
@@ -265,43 +262,43 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                         <!-- sessions -->
                         <button class="button <?php echo esc_html( $record['session_1'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 1' ) ?></strong>
-                            <?php echo  $record['session_1_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_1_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_1_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_1_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_2'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 2' ) ?></strong>
-                            <?php echo  $record['session_2_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_2_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_2_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_2_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_3'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 3' ) ?></strong>
-                            <?php echo  $record['session_3_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_3_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_3_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_3_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_4'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 4' ) ?></strong>
-                            <?php echo  $record['session_4_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_4_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_4_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_4_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_5'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 5' ) ?></strong>
-                            <?php echo  $record['session_5_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_5_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_5_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_5_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_6'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 6' ) ?></strong>
-                            <?php echo  $record['session_6_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_6_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_6_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_6_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_7'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 7' ) ?></strong>
-                            <?php echo  $record['session_7_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_7_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_7_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_7_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_8'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 8' ) ?></strong>
-                            <?php echo  $record['session_8_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_8_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_8_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_8_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_9'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 9' ) ?></strong>
-                            <?php echo  $record['session_9_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_9_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_9_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_9_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
                         <button class="button <?php echo esc_html( $record['session_10'] ? 'success' : 'hollow' ) ?> expanded" type="button">
                             <strong><?php echo esc_html( 'Session 10' ) ?></strong>
-                            <?php echo  $record['session_10_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_10_complete'] ) ) ) . '</span>' : ''  ?>
+                            <?php echo $record['session_10_complete'] ? '<br><span class="date-text">' . esc_html( date( 'M j, Y', strtotime( $record['session_10_complete'] ) ) ) . '</span>' : ''  ?>
                         </button>
 
                     <?php } // endif ?>
@@ -421,7 +418,7 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                                 </button>
                             </div>
 
-                        <?php
+                            <?php
                         endif;
                     }
                     ?>
@@ -499,13 +496,19 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
         if ( 'metrics' === $url_path ) {
-            wp_enqueue_script( 'dt_zume_script', DT_Zume::get_instance()->includes_uri . 'metrics.js', [
+            wp_enqueue_script( 'dt_zume_script',
+                DT_Zume::get_instance()->includes_uri . 'metrics.js',
+                [
                 'jquery',
                 'jquery-ui-core',
-            ], filemtime( DT_Zume::get_instance()->includes_path . 'metrics.js' ), true );
+                ],
+                filemtime( DT_Zume::get_instance()->includes_path . 'metrics.js' ),
+            true );
 
             wp_localize_script(
-                'dt_zume_script', 'wpApiZumeMetrics', [
+                'dt_zume_script',
+                'wpApiZumeMetrics',
+                [
                     'root' => esc_url_raw( rest_url() ),
                     'plugin_uri' => DT_Zume::get_instance()->dir_uri,
                     'nonce' => wp_create_nonce( 'wp_rest' ),
@@ -533,8 +536,18 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
     }
 
     public function __construct() {
-        add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 60 );
-        add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 999 );
-        add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data' ] );
+        if ( isset( $_SERVER["SERVER_NAME"] ) ) {
+            $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
+            if ( isset( $_SERVER["REQUEST_URI"] ) ) {
+                $url .= sanitize_text_field( wp_unslash( $_SERVER["REQUEST_URI"] ) );
+            }
+        }
+        $url_path = trim( str_replace( get_site_url(), "", $url ), '/' );
+
+        if ( 'metrics' === substr( $url_path, '0', 7 ) ) {
+            add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 60 );
+            add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 999 );
+            add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data' ] );
+        }
     }
 }

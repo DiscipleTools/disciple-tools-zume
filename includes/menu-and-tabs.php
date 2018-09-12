@@ -21,8 +21,7 @@ class DT_Zume_Menu
 
     private static $_instance = null;
 
-    public static function instance()
-    {
+    public static function instance() {
         if ( is_null( self::$_instance ) ) {
             self::$_instance = new self();
         }
@@ -35,8 +34,7 @@ class DT_Zume_Menu
      * @access  public
      * @since   0.1.0
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->token = DT_Zume::get_instance()->token;
         add_action( "admin_menu", [ $this, "register_menu" ] );
     } // End __construct()
@@ -46,8 +44,7 @@ class DT_Zume_Menu
      *
      * @since 0.1.0
      */
-    public function register_menu()
-    {
+    public function register_menu() {
         add_menu_page( __( 'Zúme Integration', 'disciple_tools' ), __( 'Zúme Integration', 'disciple_tools' ), 'manage_dt', 'dt_zume', [ $this, 'dt_content' ], dt_svg_icon(), 100 );
         add_meta_box( 'site_link_system_extensions', 'Zúme Default Site', [ $this, 'meta_box_extensions' ], 'site_link_system', 'normal', 'low' );
     }
@@ -67,8 +64,7 @@ class DT_Zume_Menu
     /**
      * Combined tabs preprocessor
      */
-    public function dt_content()
-    {
+    public function dt_content() {
 
         if ( ! current_user_can( 'manage_dt' ) ) {
             wp_die( esc_attr__( 'You do not have sufficient permissions to access this page.' ) );
@@ -165,8 +161,7 @@ class DT_Zume_Menu
         $this->template( 'end' );
     }
 
-    public static function site_default_metabox()
-    {
+    public static function site_default_metabox() {
         // Check for post
         if ( isset( $_POST['dt_site_default_nonce'] ) && ! empty( $_POST['dt_site_default_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_site_default_nonce'] ) ), 'dt_site_default_'. get_current_user_id() ) ) {
             if ( isset( $_POST['default-site'] ) && ! empty( $_POST['default-site'] ) ) {
@@ -217,8 +212,7 @@ class DT_Zume_Menu
         <?php
     }
 
-    public static function raw_data_retrieval_test()
-    {
+    public static function raw_data_retrieval_test() {
         $error = [];
         // Check for post
         if ( isset( $_POST['dt_site_raw_data_nonce'] ) && ! empty( $_POST['dt_site_raw_data_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_site_raw_data_nonce'] ) ), 'dt_site_raw_data_'. get_current_user_id() ) ) {
@@ -321,36 +315,27 @@ class DT_Zume_Menu
             <?php if ( ! empty( $error ) ) {
                 print_r( $error );
 }
-            ?>
+?>
 
         </form>
         <?php
     }
 
-    public static function function_test()
-    {
+    public static function function_test() {
         $report = [];
         // Check for post
-        if ( isset( $_POST['dt_zume_test_nonce'] ) && ! empty( $_POST['dt_zume_test_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_zume_test_nonce'] ) ), 'dt_zume_test'. get_current_user_id() ) ) {
-            if ( isset( $_POST['dt_zume_test'] ) && ! empty( $_POST['dt_zume_test'] ) ) {
+        if ( isset( $_POST['dt_zume_test_nonce'] )
+            && ! empty( $_POST['dt_zume_test_nonce'] )
+            && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dt_zume_test_nonce'] ) ), 'dt_zume_test'. get_current_user_id() )
+            && isset( $_POST['dt_zume_test'] )
+            && ! empty( $_POST['dt_zume_test'] ) ) {
 
-//                delete_transient('sample_google_response');
-
-                if ( get_transient( 'sample_google_response' ) && empty( $_POST['address'] ) ) {
-                    $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
-                    dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw, $_POST['item'] ?? 'full' ) );
-                } else {
-                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $_POST['address'] ?: 'Highlands Ranch, CO 80126' );
-                    set_transient( 'sample_google_response', $result, 3600 );
-                    dt_write_log( 'new transient set' );
-                    $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
-                    dt_write_log( Disciple_Tools_Google_Geocode_API::parse_raw_result( $raw, 'full' ) );
-                }
-
-
-                //                $report = DT_Zume_Core_Endpoints::instance()->build_location_from_raw_info( $result, 'google_result');
-//                $data = DT_Zume_Core_Endpoints::instance()->find_or_add_location( $report );
-
+            if ( get_transient( 'sample_google_response' ) && empty( $_POST['address'] ) ) {
+                $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
+            } else {
+                $result = Disciple_Tools_Google_Geocode_API::query_google_api( sanitize_text_field( wp_unslash( $_POST['address'] ) ) ?: 'Highlands Ranch, CO 80126' );
+                set_transient( 'sample_google_response', $result, 3600 );
+                $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
             }
         }
 
