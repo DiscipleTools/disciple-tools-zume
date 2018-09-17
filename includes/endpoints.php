@@ -94,9 +94,6 @@ class DT_Zume_Core_Endpoints
 
      // check owner exists
             if ( isset( $params['owner_raw_record']['zume_foreign_key'] ) && ! empty( $params['owner_raw_record']['zume_foreign_key'] ) ) {
-                dt_write_log( 'Owner' );
-//                dt_write_log( $params['owner_raw_record']['zume_foreign_key'] );
-//                dt_write_log( $params['owner_raw_record'] );
 
                 $members = [];
                 $owner_foreign_key = sanitize_key( wp_unslash( $params['owner_raw_record']['zume_foreign_key'] ) );
@@ -123,9 +120,6 @@ class DT_Zume_Core_Endpoints
     // parse for coleaders and test if they exist
             if ( isset( $params['coleaders'] ) && ! empty( $params['coleaders'] ) ) {
                 foreach ( $params['coleaders'] as $foreign_key => $raw_record ) {
-                    dt_write_log( 'Coleader' );
-//                    dt_write_log( $foreign_key );
-//                    dt_write_log( $raw_record );
 
                     $post_id = $this->get_id_from_zume_foreign_key( $foreign_key );
                     if ( ! $post_id ) {
@@ -267,7 +261,7 @@ class DT_Zume_Core_Endpoints
             ],
             "sources" => [
                 "values" => [
-                    [ "value" => "Zume" ],
+                    [ "value" => "zume" ],
                 ],
                 "force_values" => false
             ]
