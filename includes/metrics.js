@@ -1,5 +1,5 @@
 jQuery(document).ready(function() {
-    if('#zume_project' === window.location.hash) {
+    if( ! window.location.hash || '#zume_project' === window.location.hash) {
         show_zume_project()
     }
     if('#zume_locations' === window.location.hash) {

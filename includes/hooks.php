@@ -24,7 +24,7 @@ class DT_Zume_Hooks
     public function __construct() {
         new DT_Zume_Hooks_User();
         new DT_Zume_Hooks_Groups();
-        new DT_Zume_Hooks_Metrics();
+        new DT_Zume_Hooks_Training();
     }
 }
 
@@ -468,7 +468,8 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
     }
 }
 
-class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
+
+class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
 {
     /**
      * This filter adds a menu item to the metrics
@@ -477,13 +478,13 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
      *
      * @return string
      */
-    public function metrics_menu( $content ) {
-        $content .= '<li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Zúme Project', 'dt_zume' ) . '</a>
+    public function menu( $content ) {
+        $content .= '<li><a href="'. site_url( '/training/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Zúme Project', 'dt_zume' ) . '</a>
             <ul class="menu vertical nested is-active">
-              <li><a href="'. site_url( '/metrics/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
-              <li><a href="'. site_url( '/metrics/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
-              <li><a href="'. site_url( '/metrics/' ) .'#zume_groups" onclick="show_zume_groups()">' .  esc_html__( 'Groups', 'dt_zume' ) . '</a></li>
-              <li><a href="'. site_url( '/metrics/' ) .'#zume_people" onclick="show_zume_people()">' .  esc_html__( 'People', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/training/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/training/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/training/' ) .'#zume_groups" onclick="show_zume_groups()">' .  esc_html__( 'Groups', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/training/' ) .'#zume_people" onclick="show_zume_people()">' .  esc_html__( 'People', 'dt_zume' ) . '</a></li>
             </ul>
           </li>';
         return $content;
@@ -495,7 +496,7 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
     public function scripts() {
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
-        if ( 'metrics' === $url_path ) {
+        if ( 'training' === substr( $url_path, '0', 8 ) ) {
             wp_enqueue_script( 'dt_zume_script',
                 DT_Zume::get_instance()->includes_uri . 'metrics.js',
                 [
@@ -530,24 +531,53 @@ class DT_Zume_Hooks_Metrics extends DT_Zume_Hooks_Base
     public function check_zume_raw_data() {
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
-        if ( 'metrics' === $url_path && DT_Zume_Core::test_zume_global_stats_needs_update() ) {
+        if ( 'training' === substr( $url_path, '0', 8 ) && DT_Zume_Core::test_zume_global_stats_needs_update() ) {
             DT_Zume_Core::get_project_stats();
         }
     }
 
-    public function __construct() {
-        if ( isset( $_SERVER["SERVER_NAME"] ) ) {
-            $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
-            if ( isset( $_SERVER["REQUEST_URI"] ) ) {
-                $url .= sanitize_text_field( wp_unslash( $_SERVER["REQUEST_URI"] ) );
-            }
-        }
-        $url_path = trim( str_replace( get_site_url(), "", $url ), '/' );
+    public function add_url( $template_for_url ) {
+        $template_for_url['training'] = 'template-metrics.php';
+        return $template_for_url;
+    }
 
-        if ( 'metrics' === substr( $url_path, '0', 7 ) ) {
-            add_filter( 'dt_metrics_menu', [ $this, 'metrics_menu' ], 60 );
-            add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 999 );
-            add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data' ] );
+    public function top_nav_desktop() {
+        if ( user_can( get_current_user_id(), 'view_any_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
+            ?><li><a href="<?php echo esc_url( site_url( '/training/' ) ); ?>"><?php esc_html_e( "Training" ); ?></a></li><?php
         }
+    }
+
+    // Enqueue maps and charts for standard metrics
+    public function enqueue_google() {
+        /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
+        wp_enqueue_script( 'google-charts', 'https://www.gstatic.com/charts/loader.js', [], false );
+        /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
+        wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . dt_get_option( 'map_key' ), array(), null, true );
+    }
+
+    public function __construct() {
+
+        if ( user_can( get_current_user_id(), 'manage_options' ) ) {
+
+            add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ] );
+            add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_google' ], 10 );
+            add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data' ] );
+
+            if ( isset( $_SERVER["SERVER_NAME"] ) ) {
+                $url  = ( !isset( $_SERVER["HTTPS"] ) || @( $_SERVER["HTTPS"] != 'on' ) ) ? 'http://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) ) : 'https://'. sanitize_text_field( wp_unslash( $_SERVER["SERVER_NAME"] ) );
+                if ( isset( $_SERVER["REQUEST_URI"] ) ) {
+                    $url .= sanitize_text_field( wp_unslash( $_SERVER["REQUEST_URI"] ) );
+                }
+            }
+            $url_path = trim( str_replace( get_site_url(), "", $url ), '/' );
+
+            if ( 'training' === substr( $url_path, '0', 8 ) ) {
+
+                add_filter( 'dt_templates_for_urls', [ $this, 'add_url' ] ); // add custom URL
+                add_filter( 'dt_metrics_menu', [ $this, 'menu' ], 99 );
+                add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], 99 );
+
+            }
+        } // end admin only test
     }
 }
