@@ -542,8 +542,8 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
     }
 
     public function top_nav_desktop() {
-        if ( user_can( get_current_user_id(), 'view_any_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
-            ?><li><a href="<?php echo esc_url( site_url( '/training/' ) ); ?>"><?php esc_html_e( "Training" ); ?></a></li><?php
+        if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
+            ?><li><a href="<?php echo esc_url( site_url( '/training/' ) ); ?>"><?php esc_html_e( "Online Training" ); ?></a></li><?php
         }
     }
 
@@ -555,11 +555,16 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
         wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . dt_get_option( 'map_key' ), array(), null, true );
     }
 
+    public function return_link_to_zume_project() {
+        ?><li><a href="<?php echo esc_url( network_site_url( '/dashboard', 'https' ) ); ?>"><?php esc_html_e( "Zúme Dashboard" ); ?></a></li><?php
+    }
+
     public function __construct() {
 
-        if ( user_can( get_current_user_id(), 'manage_options' ) ) {
+        if ( user_can( get_current_user_id(), 'view_contacts' ) ) {
 
             add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ] );
+            add_action( 'dt_settings_menu_post', [ $this, 'return_link_to_zume_project' ] );
             add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_google' ], 10 );
             add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data' ] );
 

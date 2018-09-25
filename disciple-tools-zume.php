@@ -259,15 +259,14 @@ function dt_zume_no_disciple_tools_theme_found() {
  * $an_object = new An_Object
  * write_log($an_object);
  */
-if ( !function_exists( 'dt_write_log' ) ) {
+if ( ! function_exists( 'dt_write_log' ) ) {
     /**
      * A function to assist development only.
      * This function allows you to post a string, array, or object to the WP_DEBUG log.
      *
      * @param $log
      */
-    function dt_write_log( $log )
-    {
+    function dt_write_log( $log ) {
         if ( true === WP_DEBUG ) {
             if ( is_array( $log ) || is_object( $log ) ) {
                 error_log( print_r( $log, true ) );
@@ -289,8 +288,10 @@ function dt_zume_get_user_meta( $user_id = null ) {
     if ( is_null( $user_id ) ) {
         $user_id = get_current_user_id();
     }
-    return array_map( function ( $a ) { return $a[0];
-    }, get_user_meta( $user_id ) );
+    return array_map( function ( $a ) {
+            return $a[0]; },
+        get_user_meta( $user_id )
+    );
 }
 
 
