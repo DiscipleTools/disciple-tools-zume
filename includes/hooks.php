@@ -213,9 +213,34 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
         return $sections;
     }
 
+    public function register_fields( $fields, $post_type ) {
+        if ( 'contacts' === $post_type ) {
+            $fields["zume_last_check"] = [
+                "name" => 'Zume Last Check Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
+            $fields["zume_raw_record"] = [
+                "name" => 'Zume Raw Record Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
+            $fields["zume_check_sum"] = [
+                "name" => 'Zume Check Sum Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
+        }
+        return $fields;
+    }
+
     public function __construct() {
         add_action( 'dt_details_additional_section', [ $this, 'user_detail_box' ] );
         add_filter( 'dt_details_additional_section_ids', [ $this, 'user_filter_box' ], 999, 2 );
+        add_filter( 'dt_custom_fields_settings', [ $this, 'register_fields' ], 999, 2 );
 
         parent::__construct();
     }
@@ -460,9 +485,34 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
         return $sections;
     }
 
+    public function register_fields( $fields, $post_type ) {
+        if ( 'groups' === $post_type ) {
+            $fields["zume_last_check"] = [
+                "name" => 'Zume Last Check Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
+            $fields["zume_raw_record"] = [
+                "name" => 'Zume Raw Record Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
+            $fields["zume_check_sum"] = [
+                "name" => 'Zume Check Sum Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
+        }
+        return $fields;
+    }
+
     public function __construct() {
         add_action( 'dt_details_additional_section', [ $this, 'group_detail_box' ] );
         add_filter( 'dt_details_additional_section_ids', [ $this, 'groups_filter_box' ], 999, 2 );
+        add_filter( 'dt_custom_fields_settings', [ $this, 'register_fields' ], 999, 2 );
 
         parent::__construct();
     }
