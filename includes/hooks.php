@@ -25,6 +25,41 @@ class DT_Zume_Hooks
         new DT_Zume_Hooks_User();
         new DT_Zume_Hooks_Groups();
         new DT_Zume_Hooks_Training();
+
+        add_filter( 'site_link_type', [ $this, 'site_link_type' ], 10, 1 );
+        add_filter( 'site_link_type_capabilities', [ $this, 'site_link_capabilities' ], 10, 2 );
+    }
+
+    public function site_link_type( $type ) {
+        $type['zume'] = __( 'Zúme' );
+        return $type;
+    }
+
+    // Add the specific capabilities needed for the site to site linking.
+    public function site_link_capabilities( $connection_type, $capabilities ) {
+        if ( 'zume' === $connection_type ) {
+            $capabilities[] = 'access_contacts';
+            $capabilities[] = 'create_contacts';
+            $capabilities[] = 'update_shared_contacts';
+            $capabilities[] = 'view_any_contacts';
+            $capabilities[] = 'assign_any_contacts';
+            $capabilities[] = 'update_any_contacts';
+            $capabilities[] = 'delete_any_contacts';
+
+            $capabilities[] = 'access_groups';
+            $capabilities[] = 'create_groups';
+            $capabilities[] = 'view_any_groups';
+            $capabilities[] = 'assign_any_groups';
+            $capabilities[] = 'update_any_groups';
+            $capabilities[] = 'delete_any_groups';
+
+            $capabilities[] = 'read_location';
+            $capabilities[] = 'publish_locations';
+
+            $capabilities[] = 'read_peoplegroup';
+        }
+
+        return $capabilities;
     }
 }
 
