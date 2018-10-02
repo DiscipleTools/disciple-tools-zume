@@ -23,6 +23,9 @@ class DT_Zume_Core
         }
 
         $foreign_key = get_post_meta( $post_id, 'zume_foreign_key', true );
+        if ( empty( $foreign_key ) ) {
+            $foreign_key = 1;
+        }
 
         $site = self::get_site_details( get_option( 'zume_default_site' ) );
         if ( is_wp_error( $site ) ) {
