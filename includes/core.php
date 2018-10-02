@@ -18,6 +18,9 @@ class DT_Zume_Core
         }
 
         $check_sum = get_post_meta( $post_id, 'zume_check_sum', true );
+        if ( empty( $check_sum ) ) {
+            $check_sum = 1;
+        }
 
         $foreign_key = get_post_meta( $post_id, 'zume_foreign_key', true );
 
