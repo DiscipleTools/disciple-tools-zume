@@ -37,8 +37,6 @@ class DT_Zume_Hooks
 
     // Add the specific capabilities needed for the site to site linking.
     public function site_link_capabilities( $args ) {
-        dt_write_log(__METHOD__);
-//        dt_write_log( $args['connection_type'] );
         if ( 'zume' === $args['connection_type'] ) {
             $args['capabilities'][] = 'access_contacts';
             $args['capabilities'][] = 'create_contacts';
