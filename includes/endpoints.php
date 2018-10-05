@@ -414,7 +414,7 @@ class DT_Zume_Core_Endpoints
 
         $fields = [
             "title" => $raw_record['group_name'],
-            "group_type" => "group",
+            "group_type" => "pre-group",
             "group_status" => "active",
             "created_from_contact_id" => $owner_post_id,
         ];
