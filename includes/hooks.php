@@ -646,7 +646,7 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
 
     public function __construct() {
 
-        if ( user_can( get_current_user_id(), 'view_contacts' ) ) {
+        if ( user_can( get_current_user_id(), 'access_contacts' ) ) {
 
             add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ] );
             add_action( 'dt_settings_menu_post', [ $this, 'return_link_to_zume_project' ] );
