@@ -63,6 +63,17 @@ class DT_Zume_Core_Endpoints
             ]
         );
 
+        register_rest_route(
+            $public_namespace,
+            '/zume/coaching_request',
+            [
+                [
+                    'methods'  => WP_REST_Server::CREATABLE,
+                    'callback' => [ $this, 'coaching_request' ],
+                ],
+            ]
+        );
+
         /**
          * Charts and Reports
          */
@@ -189,6 +200,97 @@ class DT_Zume_Core_Endpoints
             dt_write_log( 'failed_authentication' );
             return new WP_Error( 'failed_authentication', 'Failed id and/or token authentication.' );
         }
+    }
+
+    public function coaching_request( WP_REST_Request $request ) {
+        $params = $request->get_params();
+
+        $site_key = Site_Link_System::verify_transfer_token( $params['transfer_token'] );
+        if ( is_wp_error( $site_key ) ) {
+            return [
+                'status' => 'FAIL',
+                'message' => 'Transfer token failure',
+            ];
+        }
+
+        $added = [
+            'group' => 0,
+            'user' => 0,
+            'coleaders' => 0
+        ];
+        $errors = [];
+
+        if ( isset( $params['raw_user']['zume_foreign_key'] ) && ! empty( $params['raw_user']['zume_foreign_key'] ) ) {
+
+            $members = [];
+            $owner_foreign_key = sanitize_key( wp_unslash( $params['raw_user']['zume_foreign_key'] ) );
+
+            $owner_post_id = $this->get_id_from_zume_foreign_key( $owner_foreign_key );
+            if ( ! $owner_post_id ) {
+                // Create owner contact
+                $fields = $this->build_dt_contact_record_array( $params['raw_user'] );
+                $new_post_id = Disciple_Tools_Contacts::create_contact( $fields, false );
+
+                if ( is_wp_error( $new_post_id ) ) {
+                    $errors[] = $new_post_id;
+                } else {
+                    add_post_meta( $new_post_id, 'zume_foreign_key', $owner_foreign_key, true );
+                    add_post_meta( $new_post_id, 'zume_raw_record', $params['raw_user'], true );
+                    add_post_meta( $new_post_id, 'zume_check_sum', $params['raw_user']['zume_check_sum'], true );
+                    $owner_post_id = $new_post_id;
+                    $added['user']++;
+                }
+            }
+            $members[] = $owner_post_id;
+        }
+
+
+        if ( ! empty( $params['raw_groups'] ) ) {
+            dt_write_log( 'Group' );
+
+            foreach ( $params['raw_groups'] as $group ) {
+                $zume_foreign_key = sanitize_key( wp_unslash( $group['foreign_key'] ) );
+
+                // check if group exists
+                $group_id = $this->get_id_from_zume_foreign_key( $zume_foreign_key );
+                if ( ! $group_id ) {
+
+                    $fields = $this->build_group_record_array( $group, $owner_post_id );
+
+                    $new_group_id = Disciple_Tools_Groups::create_group( $fields, false );
+
+                    if ( is_wp_error( $new_group_id ) ) {
+                        $errors[] = $new_group_id;
+                    } else {
+                        $group_id = $new_group_id;
+                    }
+                }
+
+                if ( $group_id ) {
+                    $members = array_filter( $members );
+                    if ( ! empty( $members ) ) {
+                        foreach ( $members as $member ) {
+                            Disciple_Tools_Groups::add_item_to_field( $group_id, "members", $member, false );
+                        }
+                    }
+
+                    add_post_meta( $group_id, 'zume_foreign_key', $group['foreign_key'], true );
+                    add_post_meta( $group_id, 'zume_raw_record', $group, true );
+                    add_post_meta( $group_id, 'zume_check_sum', $group['zume_check_sum'], true );
+                    add_post_meta( $group_id, 'member_count', $group['members'], true );
+
+                }
+            }
+            $added['group']++;
+        }
+
+
+        return [
+            'status' => 'OK',
+            'message' => 'Transfer success',
+            'added' => $added,
+        ];
+
     }
 
     public function three_month_plan_submitted( WP_REST_Request $request ) {
@@ -419,9 +521,9 @@ class DT_Zume_Core_Endpoints
             "created_from_contact_id" => $owner_post_id,
         ];
 
-        if ( ! empty( $raw_record['address'] ) || ! empty( $raw_record['ip_address'] ) ) {
+        if ( ! empty( $raw_record['address'] ) ) {
             $fields["contact_address"] = [
-                [ "value" => sanitize_text_field( wp_unslash( $raw_record['address'] ?: $raw_record['ip_address'] ) ) ]
+                [ "value" => sanitize_text_field( wp_unslash( $raw_record['address'] ) ) ]
             ];
         }
 
