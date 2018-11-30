@@ -61,6 +61,20 @@ class DT_Zume_Core
                     update_post_meta( $post_id, 'zume_check_sum', $new_check_sum );
                     update_post_meta( $post_id, 'zume_raw_record', $response['raw_record'] );
                     update_post_meta( $post_id, 'zume_last_check', current_time( 'mysql' ) );
+
+                    if ( 'contact' === $type ) {
+                        $count = 0;
+                        // get total groups of contact
+                        if ( isset( $response['raw_record']['zume_groups'] ) && ! empty( $response['raw_record']['zume_groups'] ) ) {
+                            $groups = maybe_unserialize( $response['raw_record']['zume_groups'] );
+                        }
+                        if ( isset( $response['raw_record']['zume_colead_groups'] ) && ! empty( $response['raw_record']['zume_colead_groups'] ) ) {
+                            $colead_groups = maybe_unserialize( $response['raw_record']['zumezume_colead_groups_groups'] );
+                        }
+                        // @todo query to match all zume_groups in DT
+                        // @todo query a groups connected to contact
+                        // @todo test if group exists, then test if contact is connected to group
+                    }
                 } else {
                     // error
                     dt_write_log( 'Contact update error.' );
