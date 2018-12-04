@@ -249,7 +249,12 @@ class DT_Zume_Core_Endpoints
             dt_write_log( 'Group' );
 
             foreach ( $params['raw_groups'] as $group ) {
-                $zume_foreign_key = sanitize_key( wp_unslash( $group['foreign_key'] ?? '' ) );
+                dt_write_log( $group );
+                if ( ! isset( $group['foreign_key'] ) ) {
+                    continue;
+                }
+
+                $zume_foreign_key = sanitize_key( wp_unslash( $group['foreign_key'] ) );
 
                 // check if group exists
                 $group_id = $this->get_id_from_zume_foreign_key( $zume_foreign_key );
