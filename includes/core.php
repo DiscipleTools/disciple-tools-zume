@@ -56,7 +56,7 @@ class DT_Zume_Core
         }
         if ( isset( $result['body'] ) ) {
             $response = json_decode( $result['body'], true );
-//            dt_write_log( $response );
+            dt_write_log( $response );
 
             // test for status
             if ( isset( $response['status'] ) ) {
@@ -132,7 +132,7 @@ class DT_Zume_Core
     }
 
     public static function insert_group_record( $group, $contact_id ) {
-        $core_endpoint_object = new DT_Zume_Core_Endpoints();
+        $core_endpoint_object = DT_Zume_Core_Endpoints::instance();
 
         $fields = $core_endpoint_object->build_group_record_array( $group, $contact_id );
 
@@ -149,7 +149,7 @@ class DT_Zume_Core
 
         wp_insert_comment([
             'comment_post_ID' => $contact_id,
-            'comment_content' => __( 'Contact was connected to group', 'disciple_tools' ) . ': ' . $group['group_name'],
+            'comment_content' => __( 'Contact was connected to group', 'disciple_tools' ) . ': [' . $group['group_name'] . ']('. site_url('/groups/') . $new_group_id .')',
             'comment_type' => '',
             'comment_parent' => 0,
             'user_id' => 0,

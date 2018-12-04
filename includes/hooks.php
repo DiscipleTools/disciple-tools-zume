@@ -79,10 +79,16 @@ abstract class DT_Zume_Hooks_Base
  */
 class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
 
+     public function check_for_update() {
+        global $post;
+        if ( is_single() && $post->post_type === 'contacts' ) {
+            DT_Zume_Core::check_for_update( $post->ID, 'contact' );
+        }
+    }
+
     public function user_detail_box( $section ) {
         if ( $section == 'zume_contact_details' ) :
             global $post;
-            DT_Zume_Core::check_for_update( $post->ID, 'contact' );
             $record = get_post_meta( $post->ID, 'zume_raw_record', true );
             $plan_key = md5( maybe_serialize( $record['zume_three_month_plan'] ?? '' ) );
             ?>
@@ -285,6 +291,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
     }
 
     public function __construct() {
+         add_action( 'wp', [ $this, 'check_for_update' ] );
         add_action( 'dt_details_additional_section', [ $this, 'user_detail_box' ] );
         add_filter( 'dt_details_additional_section_ids', [ $this, 'user_filter_box' ], 999, 2 );
         add_filter( 'dt_custom_fields_settings', [ $this, 'register_fields' ], 999, 2 );
@@ -298,6 +305,8 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
  * Class DT_Zume_Hooks_Groups
  */
 class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
+
+
 
     public function group_detail_box( $section ) {
         global $post;
@@ -557,6 +566,7 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
     }
 
     public function __construct() {
+
         add_action( 'dt_details_additional_section', [ $this, 'group_detail_box' ] );
         add_filter( 'dt_details_additional_section_ids', [ $this, 'groups_filter_box' ], 999, 2 );
         add_filter( 'dt_custom_fields_settings', [ $this, 'register_fields' ], 999, 2 );
