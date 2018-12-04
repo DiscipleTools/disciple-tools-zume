@@ -268,6 +268,18 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
                 "default" => '',
                 "hidden" => true,
             ];
+            $fields["zume_groups_check_sum"] = [
+                "name" => 'Zume Groups Check Sum Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
+            $fields["zume_groups_raw_record"] = [
+                "name" => 'Zume Groups Check Sum Field',
+                "type" => "text",
+                "default" => '',
+                "hidden" => true,
+            ];
         }
         return $fields;
     }

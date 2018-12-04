@@ -22,6 +22,11 @@ class DT_Zume_Core
             $check_sum = 1;
         }
 
+        $groups_check_sum = get_post_meta( $post_id, 'zume_groups_check_sum', true );
+        if ( empty( $groups_check_sum ) ) {
+            $groups_check_sum = 1;
+        }
+
         $foreign_key = get_post_meta( $post_id, 'zume_foreign_key', true );
         if ( empty( $foreign_key ) ) {
             $foreign_key = 1;
@@ -39,6 +44,7 @@ class DT_Zume_Core
         'body' => [
             'transfer_token' => $site['transfer_token'],
             'zume_check_sum' => $check_sum,
+            'zume_groups_check_sum' => $groups_check_sum,
             'zume_foreign_key' => $foreign_key,
             'type' => $type,
             ]
@@ -50,30 +56,65 @@ class DT_Zume_Core
         }
         if ( isset( $result['body'] ) ) {
             $response = json_decode( $result['body'], true );
+//            dt_write_log( $response );
+
+            // test for status
             if ( isset( $response['status'] ) ) {
+
+                // no updated needed
                 if ( $response['status'] == 'OK' ) {
                     // no update needed
-                    update_post_meta( $post_id, 'zume_last_check', current_time( 'mysql' ) );
-                } elseif ( $response['status'] == 'Update_Needed' && isset( $response['raw_record'] ) ) {
-                    // updated needed
+                    update_post_meta( $post_id, 'zume_last_check', current_time( 'mysql' ), current_time( 'mysql' ) );
+
+                // update needed
+                } elseif ( $response['status'] == 'Update_Needed' && isset( $response['raw_record'] ) && isset( $response['raw_group_records'] ) ) {
+
                     $new_check_sum = $response['raw_record']['zume_check_sum'] ?? $check_sum;
+                    $new_groups_check_sum = $response['raw_group_records']['groups_check_sum'] ?? $groups_check_sum;
 
-                    update_post_meta( $post_id, 'zume_check_sum', $new_check_sum );
+                    update_post_meta( $post_id, 'zume_check_sum', $new_check_sum, $new_check_sum );
+                    update_post_meta( $post_id, 'zume_groups_check_sum', $new_groups_check_sum, $new_groups_check_sum );
                     update_post_meta( $post_id, 'zume_raw_record', $response['raw_record'] );
+                    update_post_meta( $post_id, 'zume_groups_raw_record', $response['raw_group_records'] );
                     update_post_meta( $post_id, 'zume_last_check', current_time( 'mysql' ) );
 
-                    if ( 'contact' === $type ) {
-                        $count = 0;
-                        // get total groups of contact
-                        if ( isset( $response['raw_record']['zume_groups'] ) && ! empty( $response['raw_record']['zume_groups'] ) ) {
-                            $groups = maybe_unserialize( $response['raw_record']['zume_groups'] );
+                    // check for group changes
+                    if ( 'contact' === $type && isset( $response['raw_group_records'] ) && ! empty( $response['raw_group_records'] ) ) {
+                        // get lists to compare
+                        $zume_groups = maybe_unserialize( $response['raw_group_records'] );
+                        $list = self::get_zume_foreign_keys(); // all zume foreign keys
+                        foreach ( $zume_groups as $key => $group ) {
+                            if ( ! isset( $group['foreign_key'] ) ) {
+                                continue;
+                            }
+
+                            // if group does not exist, create group and add contact to it
+                            if ( array_search( $group['foreign_key'], $list ) === false ) {
+                                if ( '1' == $group['foreign_key'] ) {
+                                    continue;
+                                }
+
+                                $group_id = self::insert_group_record( $group, $post_id );
+                                if( is_wp_error( $group_id ) ) {
+                                    wp_insert_comment([
+                                        'comment_post_ID' => $post_id,
+                                        'comment_content' => __( 'Tried to add group', 'disciple_tools' ) . ": ". $group['group_name'],
+                                        'comment_type' => '',
+                                        'comment_parent' => 0,
+                                        'user_id' => 0,
+                                        'comment_date' => current_time( 'mysql' ),
+                                        'comment_approved' => 1,
+                                    ]);
+                                }
+
+                            // if group exists, test if contact is connected to group
+                            } else {
+                                if ( $existing_group_id = self::contact_needs_connected_to_group( $group['foreign_key'], $post_id ) ) {
+//                                    dt_write_log($existing_group_id);
+                                    Disciple_Tools_Groups::add_member_to_group( $existing_group_id, $post_id );
+                                }
+                            }
                         }
-                        if ( isset( $response['raw_record']['zume_colead_groups'] ) && ! empty( $response['raw_record']['zume_colead_groups'] ) ) {
-                            $colead_groups = maybe_unserialize( $response['raw_record']['zumezume_colead_groups_groups'] );
-                        }
-                        // @todo query to match all zume_groups in DT
-                        // @todo query a groups connected to contact
-                        // @todo test if group exists, then test if contact is connected to group
                     }
                 } else {
                     // error
@@ -88,6 +129,60 @@ class DT_Zume_Core
         }
 
         return true;
+    }
+
+    public static function insert_group_record( $group, $contact_id ) {
+        $core_endpoint_object = new DT_Zume_Core_Endpoints();
+
+        $fields = $core_endpoint_object->build_group_record_array( $group, $contact_id );
+
+        $new_group_id = Disciple_Tools_Groups::create_group( $fields, false );
+
+        if ( is_wp_error( $new_group_id ) ) {
+            return new WP_Error( __METHOD__, 'Failed to create group.' );
+        }
+
+        add_post_meta( $new_group_id, 'zume_foreign_key', $group['foreign_key'], true );
+        add_post_meta( $new_group_id, 'zume_raw_record', $group, true );
+        add_post_meta( $new_group_id, 'zume_check_sum', $group['zume_check_sum'], true );
+        add_post_meta( $new_group_id, 'member_count', $group['members'], true );
+
+        wp_insert_comment([
+            'comment_post_ID' => $contact_id,
+            'comment_content' => __( 'Contact was connected to group', 'disciple_tools' ) . ': ' . $group['group_name'],
+            'comment_type' => '',
+            'comment_parent' => 0,
+            'user_id' => 0,
+            'comment_date' => current_time( 'mysql' ),
+            'comment_approved' => 1,
+        ]);
+
+        return $new_group_id;
+    }
+
+    public static function contact_needs_connected_to_group( $foreign_key, $contact_id ) {
+        global $wpdb;
+        $group_post_id = $wpdb->get_var( $wpdb->prepare( "
+                SELECT post_id
+                FROM $wpdb->postmeta
+                WHERE meta_value = %s
+                AND meta_key = 'zume_foreign_key'
+                ",
+            $foreign_key
+            ));
+
+        $is_connected = $wpdb->get_var( $wpdb->prepare( "SELECT p2p_id FROM $wpdb->p2p WHERE p2p_from = %s AND p2p_to = %s", $contact_id, $group_post_id ) );
+
+        if ( $is_connected ) {
+            return false;
+        } else {
+            return $group_post_id;
+        }
+    }
+
+    public static function get_zume_foreign_keys() {
+        global $wpdb;
+        return $wpdb->get_col("SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = 'zume_foreign_key'");
     }
 
     /**
