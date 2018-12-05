@@ -229,6 +229,8 @@ class DT_Zume_Core_Endpoints
             if ( ! $owner_post_id ) {
                 // Create owner contact
                 $fields = $this->build_dt_contact_record_array( $params['raw_user'] );
+
+
                 $new_post_id = Disciple_Tools_Contacts::create_contact( $fields, false );
 
                 if ( is_wp_error( $new_post_id ) ) {
@@ -288,6 +290,16 @@ class DT_Zume_Core_Endpoints
             }
             $added['group']++;
         }
+
+        wp_insert_comment([
+            'comment_post_ID' => $owner_post_id,
+            'comment_content' => __( 'Contact came via an "Coaching Request Form"', 'disciple_tools' ),
+            'comment_type' => '',
+            'comment_parent' => 0,
+            'user_id' => 0,
+            'comment_date' => current_time( 'mysql' ),
+            'comment_approved' => 1,
+        ]);
 
 
         return [
