@@ -79,7 +79,7 @@ abstract class DT_Zume_Hooks_Base
  */
 class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
 
-     public function check_for_update() {
+    public function check_for_update() {
         global $post;
         if ( is_single() && $post->post_type === 'contacts' ) {
             DT_Zume_Core::check_for_update( $post->ID, 'contact' );

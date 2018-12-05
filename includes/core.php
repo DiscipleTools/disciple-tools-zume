@@ -95,7 +95,7 @@ class DT_Zume_Core
                                 }
 
                                 $group_id = self::insert_group_record( $group, $post_id );
-                                if( is_wp_error( $group_id ) ) {
+                                if ( is_wp_error( $group_id ) ) {
                                     wp_insert_comment([
                                         'comment_post_ID' => $post_id,
                                         'comment_content' => __( 'Tried to add group', 'disciple_tools' ) . ": ". $group['group_name'],
@@ -149,7 +149,7 @@ class DT_Zume_Core
 
         wp_insert_comment([
             'comment_post_ID' => $contact_id,
-            'comment_content' => __( 'Contact was connected to group', 'disciple_tools' ) . ': [' . $group['group_name'] . ']('. site_url('/groups/') . $new_group_id .')',
+            'comment_content' => __( 'Contact was connected to group', 'disciple_tools' ) . ': [' . $group['group_name'] . ']('. site_url( '/groups/' ) . $new_group_id .')',
             'comment_type' => '',
             'comment_parent' => 0,
             'user_id' => 0,
@@ -169,7 +169,7 @@ class DT_Zume_Core
                 AND meta_key = 'zume_foreign_key'
                 ",
             $foreign_key
-            ));
+        ));
 
         $is_connected = $wpdb->get_var( $wpdb->prepare( "SELECT p2p_id FROM $wpdb->p2p WHERE p2p_from = %s AND p2p_to = %s", $contact_id, $group_post_id ) );
 
@@ -182,7 +182,7 @@ class DT_Zume_Core
 
     public static function get_zume_foreign_keys() {
         global $wpdb;
-        return $wpdb->get_col("SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = 'zume_foreign_key'");
+        return $wpdb->get_col( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = 'zume_foreign_key'" );
     }
 
     /**
