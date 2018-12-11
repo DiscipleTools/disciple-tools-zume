@@ -290,11 +290,42 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
         return $fields;
     }
 
+    /**
+     * This function removes the zume fiels from loading in the javascript page object contactsDetailsWpApiSettings
+     *
+    * @param $fields
+     *
+     * @return mixed
+     */
+    public function remove_zume_fields_from_post( $fields ) {
+        if ( isset( $fields['zume_last_check'] ) ) {
+            unset( $fields['zume_last_check'] );
+        }
+        if ( isset( $fields['zume_raw_record'] ) ) {
+            unset( $fields['zume_raw_record'] );
+        }
+        if ( isset( $fields['zume_check_sum'] ) ) {
+            unset( $fields['zume_check_sum'] );
+        }
+        if ( isset( $fields['zume_foreign_key'] ) ) {
+            unset( $fields['zume_foreign_key'] );
+        }
+        if ( isset( $fields['zume_groups_check_sum'] ) ) {
+            unset( $fields['zume_groups_check_sum'] );
+        }
+        if ( isset( $fields['zume_groups_raw_record'] ) ) {
+            unset( $fields['zume_groups_raw_record'] );
+        }
+
+        return $fields;
+    }
+
     public function __construct() {
          add_action( 'wp', [ $this, 'check_for_update' ] );
         add_action( 'dt_details_additional_section', [ $this, 'user_detail_box' ] );
         add_filter( 'dt_details_additional_section_ids', [ $this, 'user_filter_box' ], 999, 2 );
         add_filter( 'dt_custom_fields_settings', [ $this, 'register_fields' ], 999, 2 );
+        add_filter( 'dt_contact_fields_post_filter', [ $this, 'remove_zume_fields_from_post' ], 999, 2 );
 
         parent::__construct();
     }
@@ -305,8 +336,6 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
  * Class DT_Zume_Hooks_Groups
  */
 class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
-
-
 
     public function group_detail_box( $section ) {
         global $post;
@@ -448,7 +477,7 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                                 <?php esc_html_e( 'Status' ) ?>:
                             </dt>
                             <dd>
-                                <?php echo esc_attr( $record['closed'] ? __( 'Open' ) : __( 'Closed' ) ) ?>
+                                <?php echo esc_attr( empty( $record['closed'] ) ? __( 'Open' ) : __( 'Closed' ) ) ?>
                             </dd>
                         <?php endif; ?>
 
@@ -519,13 +548,6 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                 </div>
             <?php endif; ?>
 
-            <script>
-                jQuery(document).ready(function(){
-                    jQuery.ajax(window.location, function(data) {
-                        jQuery('#map-reveal').html(data).foundation();
-                    });
-                })
-            </script>
             <?php
         endif;
 
@@ -565,11 +587,35 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
         return $fields;
     }
 
+    /**
+    * This removes unnecissary zume data from the get_groups call loaded into the wpApiGroupsSettings javascript object
+ * @see
+    * @param $fields
+     *
+     * @return mixed
+     */
+    public function remove_zume_from_post_array( $fields ) {
+        if ( isset( $fields['zume_last_check'] ) ) {
+            unset( $fields['zume_last_check'] );
+        }
+        if ( isset( $fields['zume_raw_record'] ) ) {
+            unset( $fields['zume_raw_record'] );
+        }
+        if ( isset( $fields['zume_check_sum'] ) ) {
+            unset( $fields['zume_check_sum'] );
+        }
+        if ( isset( $fields['zume_foreign_key'] ) ) {
+            unset( $fields['zume_foreign_key'] );
+        }
+        return $fields;
+    }
+
     public function __construct() {
 
         add_action( 'dt_details_additional_section', [ $this, 'group_detail_box' ] );
         add_filter( 'dt_details_additional_section_ids', [ $this, 'groups_filter_box' ], 999, 2 );
         add_filter( 'dt_custom_fields_settings', [ $this, 'register_fields' ], 999, 2 );
+        add_filter( 'dt_groups_fields_post_filter', [ $this, 'remove_zume_from_post_array'], 999, 1 );
 
         parent::__construct();
     }
