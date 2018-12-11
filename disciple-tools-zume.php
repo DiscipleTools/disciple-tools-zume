@@ -3,12 +3,12 @@
  * Plugin Name: Disciple Tools - Zume
  * Plugin URI: https://github.com/ZumeProject/disciple-tools-zume
  * Description: Disciple Tools - Zume plugin integrates the Disciple Tools system into the Zume Project.
- * Version:  0.1
+ * Version:  1.1
  * Author URI: https://github.com/DiscipleTools/
  * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-zume
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
- * Tested up to: 4.9.4
+ * Tested up to: 5.0
  *
  * @package Disciple_Tools
  * @link    https://github.com/DiscipleTools
