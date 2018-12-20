@@ -589,7 +589,6 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
 
     /**
     * This removes unnecissary zume data from the get_groups call loaded into the wpApiGroupsSettings javascript object
- * @see
     * @param $fields
      *
      * @return mixed
@@ -615,7 +614,7 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
         add_action( 'dt_details_additional_section', [ $this, 'group_detail_box' ] );
         add_filter( 'dt_details_additional_section_ids', [ $this, 'groups_filter_box' ], 999, 2 );
         add_filter( 'dt_custom_fields_settings', [ $this, 'register_fields' ], 999, 2 );
-        add_filter( 'dt_groups_fields_post_filter', [ $this, 'remove_zume_from_post_array'], 999, 1 );
+        add_filter( 'dt_groups_fields_post_filter', [ $this, 'remove_zume_from_post_array' ], 999, 1 );
 
         parent::__construct();
     }
