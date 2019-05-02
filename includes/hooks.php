@@ -247,7 +247,7 @@ class DT_Zume_Hooks_User extends DT_Zume_Hooks_Base {
     public function user_filter_box( $sections, $post_type = '' ) {
         if ($post_type === "contacts") {
             global $post;
-            if ( get_post_meta( $post->ID, 'zume_raw_record', true ) ) {
+            if ( $post && get_post_meta( $post->ID, 'zume_raw_record', true ) ) {
                 $sections[] = 'zume_contact_details';
             }
         }
@@ -556,7 +556,7 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
     public function groups_filter_box( $sections, $post_type = '' ) {
         if ($post_type === "groups") {
             global $post;
-            if ( get_post_meta( $post->ID, 'zume_raw_record', true ) ) {
+            if ( $post && get_post_meta( $post->ID, 'zume_raw_record', true ) ) {
                 $sections[] = 'zume_group_details';
             }
         }
@@ -583,6 +583,11 @@ class DT_Zume_Hooks_Groups extends DT_Zume_Hooks_Base {
                 "default" => '',
                 "hidden" => true,
             ];
+            $fields["health_metrics"]["customizable"] = 'all';
+        }
+        if ( 'contacts' === $post_type ){
+            $fields["seeker_path"]["customizable"] = 'all';
+            $fields["milestones"]["customizable"] = 'all';
         }
         return $fields;
     }
