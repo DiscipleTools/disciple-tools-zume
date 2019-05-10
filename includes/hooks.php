@@ -701,10 +701,14 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
 
     // Enqueue maps and charts for standard metrics
     public function enqueue_google() {
-        /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
-        wp_enqueue_script( 'google-charts', 'https://www.gstatic.com/charts/loader.js', [], false );
-        /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
-        wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . dt_get_option( 'map_key' ), array(), null, true );
+        $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
+
+        if ( 'training' === substr( $url_path, '0', 8 ) && DT_Zume_Core::test_zume_global_stats_needs_update() ) {
+            /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
+            wp_enqueue_script( 'google-charts', 'https://www.gstatic.com/charts/loader.js', [], false );
+            /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
+            wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . dt_get_option( 'map_key' ), [], null, true );
+        }
     }
 
     public function return_link_to_zume_project() {
@@ -715,7 +719,7 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
 
         if ( user_can( get_current_user_id(), 'access_contacts' ) ) {
 
-            add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ] );
+            add_action( 'dt_top_nav_desktop', [ $this, 'top_nav_desktop' ], 50 );
             add_action( 'dt_settings_menu_post', [ $this, 'return_link_to_zume_project' ] );
             add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_google' ], 10 );
             add_action( 'plugins_loaded', [ $this, 'check_zume_raw_data' ] );
