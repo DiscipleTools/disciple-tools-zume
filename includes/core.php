@@ -111,7 +111,7 @@ class DT_Zume_Core
                             } else {
                                 if ( $existing_group_id = self::contact_needs_connected_to_group( $group['foreign_key'], $post_id ) ) {
 //                                    dt_write_log($existing_group_id);
-                                    Disciple_Tools_Groups::add_member_to_group( $existing_group_id, $post_id );
+                                    Disciple_Tools_Groups::update_group( $existing_group_id, [ 'members' => [ 'values' => [ [ 'value' => $post_id ] ] ] ] );
                                 }
                             }
                         }
