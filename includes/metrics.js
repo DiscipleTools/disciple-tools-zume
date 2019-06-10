@@ -85,7 +85,7 @@ function show_zume_project(){
                 </div>
             </div>
             <div class="cell center">
-                <span class="section-subheader" >Activity in the Last 30 Days</span>
+                <span class="section-subheader">Groups and People Taking Meaningful Steps in the Training</span>
                 <div id="combo_active" style="width: 100%; height: 500px;"></div>
             </div>
             <div class="cell center"><hr>

@@ -89,6 +89,7 @@ class DT_Zume {
 
 
     private function disciple_tools() {
+        require_once( 'includes/google-geocoding.php' );
         require_once( 'includes/core.php' );
         require_once( 'includes/endpoints.php' );
         require_once( 'includes/hooks.php' );
