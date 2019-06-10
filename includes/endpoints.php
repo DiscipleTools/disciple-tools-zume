@@ -182,7 +182,7 @@ class DT_Zume_Core_Endpoints
                     $members = array_filter( $members );
                     if ( ! empty( $members ) ) {
                         foreach ( $members as $member ) {
-                            Disciple_Tools_Groups::add_item_to_field( $group_id, "members", $member, false );
+                            Disciple_Tools_Groups::update_group( $group_id, [ "members" => [ "values" => [ [ "value" => $member ] ] ] ], false );
                         }
                     }
 
@@ -278,7 +278,7 @@ class DT_Zume_Core_Endpoints
                     $members = array_filter( $members );
                     if ( ! empty( $members ) ) {
                         foreach ( $members as $member ) {
-                            Disciple_Tools_Groups::add_item_to_field( $group_id, "members", $member, false );
+                            Disciple_Tools_Groups::update_group( $group_id, [ "members" => [ "values" => [ [ "value" => $member ] ] ] ], false );
                         }
                     }
 
@@ -536,7 +536,7 @@ class DT_Zume_Core_Endpoints
             "title" => $raw_record['group_name'],
             "group_type" => "pre-group",
             "group_status" => "active",
-            "created_from_contact_id" => $owner_post_id,
+            "members" => [ "values" => [ [ "value" => $owner_post_id ] ] ],
         ];
 
         if ( ! empty( $raw_record['address'] ) ) {
