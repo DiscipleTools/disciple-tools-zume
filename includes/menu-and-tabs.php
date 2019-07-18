@@ -314,8 +314,8 @@ class DT_Zume_Menu
 
             <?php if ( ! empty( $error ) ) {
                 print_r( $error );
-}
-?>
+            }
+            ?>
 
         </form>
         <?php
