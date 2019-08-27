@@ -624,7 +624,7 @@ class DT_Zume_Core_Endpoints
 
         // check for nulls and build array for searching
         switch ( $type ) {
-            case 'google_result': // this is a raw google geocoding result
+            case 'google_result': // this is a raw google geocode-api result
                 if ( ! is_null( $location_data ) && isset( $location_data['status'] ) && ( 'OK' == $location_data['status'] ?? '' ) ) {
                     $address_components = $location_data['results'][0]['address_components'];
                     $raw_google_response = $location_data;
@@ -632,7 +632,7 @@ class DT_Zume_Core_Endpoints
                 break;
             case 'address':
                 if ( ! empty( $location_data ) ) {
-                    $result = Disciple_Tools_Google_Geocode_API::query_google_api( $location_data );
+                    $result = DT_Mapbox_API::forward_lookup( $location_data );
                     if ( $result ) {
                         $address_components = $result['results'][0]['address_components'];
                         $raw_google_response = $result;

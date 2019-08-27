@@ -89,7 +89,12 @@ class DT_Zume {
 
 
     private function disciple_tools() {
-        require_once( 'includes/google-geocoding.php' );
+        if ( file_exists( plugin_dir_path( __FILE__ ) . 'dt-mapping/mapbox-api.php' ) ) {
+            require_once( plugin_dir_path( __FILE__ ) . 'dt-mapping/mapbox-api.php' );
+        }
+        if ( file_exists( plugin_dir_path( __FILE__ ) . 'dt-mapping/google-api.php' ) ) {
+            require_once( plugin_dir_path( __FILE__ ) . 'dt-mapping/google-api.php' );
+        }
         require_once( 'includes/core.php' );
         require_once( 'includes/endpoints.php' );
         require_once( 'includes/hooks.php' );

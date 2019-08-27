@@ -333,7 +333,7 @@ class DT_Zume_Menu
             if ( get_transient( 'sample_google_response' ) && empty( $_POST['address'] ) ) {
                 $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
             } else {
-                $result = Disciple_Tools_Google_Geocode_API::query_google_api( sanitize_text_field( wp_unslash( $_POST['address'] ) ) ?: 'Highlands Ranch, CO 80126' );
+                $result = DT_Mapbox_API::forward_lookup( sanitize_text_field( wp_unslash( $_POST['address'] ) ) ?: 'Highlands Ranch, CO 80126' );
                 set_transient( 'sample_google_response', $result, 3600 );
                 $raw = maybe_unserialize( get_transient( 'sample_google_response' ) );
             }
