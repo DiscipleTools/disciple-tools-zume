@@ -39,7 +39,7 @@ function dt_zume() {
     }
 
 }
-add_action( 'plugins_loaded', 'dt_zume' );
+add_action( 'after_setup_theme', 'dt_zume' );
 
 
 class DT_Zume {
@@ -89,11 +89,9 @@ class DT_Zume {
 
 
     private function disciple_tools() {
-        if ( file_exists( plugin_dir_path( __FILE__ ) . 'dt-mapping/mapbox-api.php' ) ) {
-            require_once( plugin_dir_path( __FILE__ ) . 'dt-mapping/mapbox-api.php' );
-        }
-        if ( file_exists( plugin_dir_path( __FILE__ ) . 'dt-mapping/google-api.php' ) ) {
-            require_once( plugin_dir_path( __FILE__ ) . 'dt-mapping/google-api.php' );
+        if ( file_exists( trailingslashit( get_template_directory() ) . 'dt-mapping/loader.php' ) ) {
+            require_once( trailingslashit( get_template_directory() ) . 'dt-mapping/loader.php' );
+            new DT_Mapping_Module_Loader( 'disciple_tools' );
         }
         require_once( 'includes/core.php' );
         require_once( 'includes/endpoints.php' );
