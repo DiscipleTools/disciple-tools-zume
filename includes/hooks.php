@@ -708,11 +708,11 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
     public function enqueue_google() {
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
-        if ( 'training' === substr( $url_path, '0', 8 ) && DT_Zume_Core::test_zume_global_stats_needs_update() ) {
+        if ( 'training' === substr( $url_path, '0', 8 )  ) {
             /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
             wp_enqueue_script( 'google-charts', 'https://www.gstatic.com/charts/loader.js', [], false );
             /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
-            wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . dt_get_option( 'map_key' ), [], null, true );
+//            wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=' . Disciple_Tools_Google_Geocode_API::key(), [], null, true );
         }
     }
 
@@ -748,3 +748,4 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
         parent::__construct();
     }
 }
+
