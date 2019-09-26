@@ -636,12 +636,12 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
      * @return string
      */
     public function menu( $content ) {
-        $content .= '<li><a href="'. site_url( '/training/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Zúme Project', 'dt_zume' ) . '</a>
+        $content .= '<li><a href="'. site_url( '/zume/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Zúme Project', 'dt_zume' ) . '</a>
             <ul class="menu vertical nested is-active">
-              <li><a href="'. site_url( '/training/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
-              <li><a href="'. site_url( '/training/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
-              <li><a href="'. site_url( '/training/' ) .'#zume_groups" onclick="show_zume_groups()">' .  esc_html__( 'Groups', 'dt_zume' ) . '</a></li>
-              <li><a href="'. site_url( '/training/' ) .'#zume_people" onclick="show_zume_people()">' .  esc_html__( 'People', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/zume/' ) .'#zume_project" onclick="show_zume_project()">' .  esc_html__( 'Overview', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/zume/' ) .'#zume_locations" onclick="show_zume_locations()">' .  esc_html__( 'Locations', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/zume/' ) .'#zume_groups" onclick="show_zume_groups()">' .  esc_html__( 'Groups', 'dt_zume' ) . '</a></li>
+              <li><a href="'. site_url( '/zume/' ) .'#zume_people" onclick="show_zume_people()">' .  esc_html__( 'People', 'dt_zume' ) . '</a></li>
             </ul>
           </li>';
         return $content;
@@ -653,7 +653,7 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
     public function scripts() {
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
-        if ( 'training' === substr( $url_path, '0', 8 ) ) {
+        if ( 'zume' === substr( $url_path, '0', 8 ) ) {
             wp_enqueue_script( 'dt_zume_script',
                 DT_Zume::get_instance()->includes_uri . 'metrics.js',
                 [
@@ -688,19 +688,19 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
     public function check_zume_raw_data() {
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
-        if ( 'training' === substr( $url_path, '0', 8 ) && DT_Zume_Core::test_zume_global_stats_needs_update() ) {
+        if ( 'zume' === substr( $url_path, '0', 8 ) && DT_Zume_Core::test_zume_global_stats_needs_update() ) {
             DT_Zume_Core::get_project_stats();
         }
     }
 
     public function add_url( $template_for_url ) {
-        $template_for_url['training'] = 'template-metrics.php';
+        $template_for_url['zume'] = 'template-metrics.php';
         return $template_for_url;
     }
 
     public function top_nav_desktop() {
         if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
-            ?><li><a href="<?php echo esc_url( site_url( '/training/' ) ); ?>"><?php esc_html_e( "Zúme" ); ?></a></li><?php
+            ?><li><a href="<?php echo esc_url( site_url( '/zume/' ) ); ?>"><?php esc_html_e( "Zúme" ); ?></a></li><?php
         }
     }
 
@@ -708,7 +708,7 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
     public function enqueue_google() {
         $url_path = trim( parse_url( add_query_arg( array() ), PHP_URL_PATH ), '/' );
 
-        if ( 'training' === substr( $url_path, '0', 8 )  ) {
+        if ( 'zume' === substr( $url_path, '0', 8 )  ) {
             /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
             wp_enqueue_script( 'google-charts', 'https://www.gstatic.com/charts/loader.js', [], false );
             /* phpcs:ignore WordPress.WP.EnqueuedResourceParameters */
@@ -737,7 +737,7 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
             }
             $url_path = trim( str_replace( get_site_url(), "", $url ), '/' );
 
-            if ( 'training' === substr( $url_path, '0', 8 ) ) {
+            if ( 'zume' === substr( $url_path, '0', 8 ) ) {
 
                 add_filter( 'dt_templates_for_urls', [ $this, 'add_url' ] ); // add custom URL
                 add_filter( 'dt_metrics_menu', [ $this, 'menu' ], 99 );
