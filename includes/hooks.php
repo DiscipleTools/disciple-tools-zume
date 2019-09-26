@@ -700,7 +700,7 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
 
     public function top_nav_desktop() {
         if ( user_can( get_current_user_id(), 'view_contacts' ) || user_can( get_current_user_id(), 'view_project_metrics' ) ) {
-            ?><li><a href="<?php echo esc_url( site_url( '/training/' ) ); ?>"><?php esc_html_e( "Online Training" ); ?></a></li><?php
+            ?><li><a href="<?php echo esc_url( site_url( '/training/' ) ); ?>"><?php esc_html_e( "Zúme" ); ?></a></li><?php
         }
     }
 
@@ -745,5 +745,6 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
 
             }
         } // end admin only test
+        parent::__construct();
     }
 }
