@@ -717,7 +717,7 @@ class DT_Zume_Hooks_Training extends DT_Zume_Hooks_Base
     }
 
     public function return_link_to_zume_project() {
-        ?><li><a href="<?php echo esc_url( network_site_url( '/dashboard', 'https' ) ); ?>"><?php esc_html_e( "Zúme Dashboard" ); ?></a></li><?php
+        ?><li><a href="<?php echo esc_url( network_site_url( '/', 'https' ) ); ?>"><?php esc_html_e( "Zúme Training" ); ?></a></li><?php
     }
 
     public function __construct() {
