@@ -31,8 +31,8 @@ msgstr ""
 
 #: disciple-tools-zume.php:237
 msgid ""
-"'Disciple Tools - Zume' plugin requires 'Disciple Tools' or 'Zúme Project' "
-"themes to work. Please activate 'Disciple Tools' or 'Zúme Project' themes or "
+"'Disciple Tools - Zume' plugin requires 'Disciple Tools' or 'Zúme Training' "
+"themes to work. Please activate 'Disciple Tools' or 'Zúme Training' themes or "
 "deactivate 'Disciple Tools - Zume' plugin."
 msgstr ""
 
