@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since  1.0
  * @access public
- * @return object
+ * @return object|bool
  */
 function dt_zume() {
     $current_theme = get_option( 'current_theme' );
@@ -34,8 +34,10 @@ function dt_zume() {
         return DT_Zume::get_instance();
     }
     else {
-        add_action( 'admin_notices', 'dt_zume_no_disciple_tools_theme_found' );
-        return new WP_Error( 'current_theme_not_dt', 'Disciple Tools Theme not active.' );
+        if ( ! is_multisite() ) {
+            add_action('admin_notices', 'dt_zume_no_disciple_tools_theme_found');
+        }
+        return false;
     }
 
 }
